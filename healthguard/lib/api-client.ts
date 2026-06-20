@@ -1,0 +1,276 @@
+/**
+ * API Client for HealthGuard Backend
+ * Handles all HTTP requests to the backend server
+ */
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+interface RequestOptions extends RequestInit {
+  headers?: Record<string, string>;
+}
+
+interface ApiResponse<T = unknown> {
+  success: boolean;
+  message?: string;
+  data?: T;
+  error?: string;
+  statusCode: number;
+}
+
+/**
+ * Make authenticated API requests with automatic token handling
+ */
+async function request<T>(
+  endpoint: string,
+  options: RequestOptions = {}
+): Promise<ApiResponse<T>> {
+  const url = `${API_URL}${endpoint}`;
+  
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+
+  // Add auth token if available
+  const token = localStorage.getItem("auth_token");
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include", // Include cookies for refresh tokens
+    });
+
+    const data: ApiResponse<T> = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `API Error: ${response.status}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`API Request Failed: ${endpoint}`, error);
+    throw error;
+  }
+}
+
+/**
+ * Authentication API endpoints
+ */
+export const authApi = {
+  login: async (email: string, password: string) =>
+    request<{
+      user: {
+        id: string;
+        email: string;
+        name: string;
+        role: "ADMIN" | "DOCTOR" | "PATIENT";
+        avatar?: string;
+      };
+      accessToken: string;
+      refreshToken: string;
+    }>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+
+  register: async (
+    email: string,
+    password: string,
+    name: string,
+    role: string,
+    hospitalName?: string
+  ) =>
+    request("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        password,
+        confirmPassword: password,
+        name,
+        role: role.toUpperCase(),
+        ...(hospitalName?.trim() ? { hospitalName: hospitalName.trim() } : {}),
+      }),
+    }),
+
+  verifyOtp: async (email: string, otp: string, purpose = "EMAIL_VERIFICATION") =>
+    request("/api/auth/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, otp, purpose }),
+    }),
+
+  refreshToken: async () =>
+    request<{ accessToken: string }>("/api/auth/refresh-token", {
+      method: "POST",
+    }),
+
+  logout: async () =>
+    request("/api/auth/logout", {
+      method: "POST",
+    }),
+};
+
+/**
+ * Patient API endpoints
+ */
+export const patientApi = {
+  getProfile: async () =>
+    request("/api/patient/profile", {
+      method: "GET",
+    }),
+
+  recordVital: async (vitals: Record<string, unknown>) =>
+    request("/api/patient/vitals", {
+      method: "POST",
+      body: JSON.stringify(vitals),
+    }),
+
+  getVitals: async (page = 1, limit = 20) =>
+    request(`/api/patient/vitals?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  getAccessRequests: async (page = 1, limit = 10) =>
+    request(`/api/patient/access-requests?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  approveAccessRequest: async (requestId: string) =>
+    request(`/api/patient/access-requests/${requestId}/approve`, {
+      method: "POST",
+    }),
+
+  getMedicalRecords: async (page = 1, limit = 10) =>
+    request(`/api/patient/medical-records?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+};
+
+/**
+ * Doctor API endpoints
+ */
+export const doctorApi = {
+  getProfile: async () =>
+    request("/api/doctor/profile", {
+      method: "GET",
+    }),
+
+  getPatients: async (page = 1, limit = 20) =>
+    request(`/api/doctor/patients?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  requestAccess: async (patientId: string, reason: string, priority = "NORMAL") =>
+    request("/api/doctor/access-requests", {
+      method: "POST",
+      body: JSON.stringify({ patientId, reason, priority }),
+    }),
+
+  getAccessRequests: async (page = 1, limit = 20) =>
+    request(`/api/doctor/access-requests?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  getMonitoringSessions: async (patientId: string) =>
+    request(`/api/doctor/monitoring/${patientId}`, {
+      method: "GET",
+    }),
+
+  startMonitoring: async (patientId: string) =>
+    request("/api/doctor/monitoring/start", {
+      method: "POST",
+      body: JSON.stringify({ patientId }),
+    }),
+
+  createAlert: async (patientId: string, title: string, description: string, severity: string) =>
+    request("/api/doctor/alerts", {
+      method: "POST",
+      body: JSON.stringify({ patientId, title, description, severity }),
+    }),
+};
+
+/**
+ * Admin API endpoints
+ */
+export const adminApi = {
+  getDashboardStats: async () =>
+    request("/api/admin/dashboard/stats", {
+      method: "GET",
+    }),
+
+  getHospitals: async (page = 1, limit = 20) =>
+    request(`/api/admin/hospitals?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  createHospital: async (hospitalData: Record<string, unknown>) =>
+    request("/api/admin/hospitals", {
+      method: "POST",
+      body: JSON.stringify(hospitalData),
+    }),
+
+  getPersonnel: async (hospitalId: string, page = 1, limit = 20) =>
+    request(`/api/admin/personnel?hospitalId=${hospitalId}&page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  getSystemLogs: async (page = 1, limit = 50) =>
+    request(`/api/admin/logs/system?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  getLoginHistory: async (page = 1, limit = 50) =>
+    request(`/api/admin/logs/login?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+};
+
+/**
+ * AI Assistant API endpoints
+ */
+export const aiApi = {
+  createConversation: async (title?: string) =>
+    request("/api/ai/conversations", {
+      method: "POST",
+      body: JSON.stringify({ title }),
+    }),
+
+  sendMessage: async (conversationId: string, message: string) =>
+    request(`/api/ai/conversations/${conversationId}/message`, {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
+
+  getConversations: async (page = 1, limit = 20) =>
+    request(`/api/ai/conversations?page=${page}&limit=${limit}`, {
+      method: "GET",
+    }),
+
+  getConversation: async (conversationId: string) =>
+    request(`/api/ai/conversations/${conversationId}`, {
+      method: "GET",
+    }),
+
+  getHealthAnalysis: async () =>
+    request("/api/ai/health-analysis", {
+      method: "GET",
+    }),
+};
+
+/**
+ * Utility function to handle token storage
+ */
+export function setAuthToken(token: string) {
+  localStorage.setItem("auth_token", token);
+}
+
+export function getAuthToken() {
+  return localStorage.getItem("auth_token");
+}
+
+export function clearAuthToken() {
+  localStorage.removeItem("auth_token");
+}
