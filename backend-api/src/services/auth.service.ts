@@ -2,6 +2,7 @@ import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
+import { sendPasswordResetEmail } from "./email.service";
 
 const prisma = new PrismaClient();
 
@@ -20,18 +21,38 @@ const LoginSchema = z.object({
   password: z.string().min(1),
 });
 
+const RequestPasswordResetSchema = z.object({
+  email: z.string().email(),
+});
+
+const VerifyPasswordResetOtpSchema = z.object({
+  email: z.string().email(),
+  otp: z.string().length(6).regex(/^\d+$/),
+});
+
+const ResetPasswordSchema = z.object({
+  email: z.string().email(),
+  otp: z.string().length(6).regex(/^\d+$/),
+  password: z.string().min(8),
+  confirmPassword: z.string().min(8),
+});
+
 type RegisterInput = z.infer<typeof RegisterSchema>;
 type LoginInput = z.infer<typeof LoginSchema>;
+type UserRecord = {
+  model: "Patient" | "Doctor" | "Administrator";
+  user: { id: string; email: string; passwordHash: string };
+};
 
 function signAccessToken(payload: { sub: string; role: Role; userId: string }) {
-  const secret = process.env.JWT_ACCESS_SECRET || "dev_access_secret";
-  const expiresIn = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
+  const secret = (process.env.JWT_ACCESS_SECRET || "dev_access_secret") as jwt.Secret;
+  const expiresIn = (process.env.JWT_ACCESS_EXPIRES_IN || "15m") as jwt.SignOptions["expiresIn"];
   return jwt.sign(payload, secret, { expiresIn });
 }
 
 function signRefreshToken(payload: { sub: string; userId: string; role: Role }) {
-  const secret = process.env.JWT_REFRESH_SECRET || "dev_refresh_secret";
-  const expiresIn = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
+  const secret = (process.env.JWT_REFRESH_SECRET || "dev_refresh_secret") as jwt.Secret;
+  const expiresIn = (process.env.JWT_REFRESH_EXPIRES_IN || "7d") as jwt.SignOptions["expiresIn"];
   return jwt.sign(payload, secret, { expiresIn });
 }
 
@@ -66,6 +87,20 @@ async function emailExistsAnywhere(email: string) {
     prisma.administrator.findUnique({ where: { email } }),
   ]);
   return Boolean(patient || doctor || admin);
+}
+
+async function findUserByEmail(email: string): Promise<UserRecord | null> {
+  const [patient, doctor, admin] = await Promise.all([
+    prisma.patient.findUnique({ where: { email } }),
+    prisma.doctor.findUnique({ where: { email } }),
+    prisma.administrator.findUnique({ where: { email } }),
+  ]);
+
+  if (patient) return { model: "Patient", user: { id: patient.id, email: patient.email, passwordHash: patient.passwordHash } };
+  if (doctor) return { model: "Doctor", user: { id: doctor.id, email: doctor.email, passwordHash: doctor.passwordHash } };
+  if (admin) return { model: "Administrator", user: { id: admin.id, email: admin.email, passwordHash: admin.passwordHash } };
+
+  return null;
 }
 
 export async function registerService(input: RegisterInput) {
@@ -137,7 +172,139 @@ export async function registerService(input: RegisterInput) {
   return { user: { ...created, role }, accessToken, refreshToken };
 }
 
+function getOtpPurpose(purpose?: string | null) {
+  return (purpose && purpose.trim().length ? purpose.trim() : "EMAIL_VERIFICATION").toUpperCase();
+}
+
+function generateOtpCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function createOtp(email: string, purpose: string) {
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+  const created = await prisma.otp.create({
+    data: {
+      email,
+      purpose,
+      code: generateOtpCode(),
+      expiresAt,
+    },
+    select: { id: true, email: true, purpose: true, code: true, expiresAt: true },
+  });
+
+  return { otpId: created.id, email: created.email, purpose: created.purpose, code: created.code, expiresAt: created.expiresAt };
+}
+
+export async function requestOtpService(input: { email: string; purpose?: string }) {
+  const purpose = getOtpPurpose(input.purpose);
+
+  return createOtp(input.email, purpose);
+}
+
+export async function verifyOtpService(input: { email: string; otp: string; purpose?: string }) {
+  const purpose = getOtpPurpose(input.purpose);
+  const otp = input.otp.trim();
+
+  const record = await prisma.otp.findFirst({
+    where: { email: input.email, purpose, code: otp, consumedAt: null },
+  });
+
+  if (!record) {
+    throw Object.assign(new Error("Invalid or already used OTP"), { statusCode: 400 });
+  }
+
+  if (record.expiresAt.getTime() < Date.now()) {
+    throw Object.assign(new Error("OTP expired"), { statusCode: 400 });
+  }
+
+  await prisma.otp.update({
+    where: { id: record.id },
+    data: { consumedAt: new Date() },
+  });
+
+  return { verified: true };
+}
+
+export async function requestPasswordResetService(input: z.infer<typeof RequestPasswordResetSchema>) {
+  const parsed = RequestPasswordResetSchema.parse(input);
+  const user = await findUserByEmail(parsed.email);
+
+  if (!user) {
+    return { email: parsed.email, exists: false };
+  }
+
+  const otp = await createOtp(parsed.email, "PASSWORD_RESET");
+  await sendPasswordResetEmail(parsed.email, otp.code);
+
+  return { email: parsed.email, exists: true, expiresAt: otp.expiresAt };
+}
+
+export async function verifyPasswordResetOtpService(input: z.infer<typeof VerifyPasswordResetOtpSchema>) {
+  const parsed = VerifyPasswordResetOtpSchema.parse(input);
+  const record = await prisma.otp.findFirst({
+    where: { email: parsed.email, purpose: "PASSWORD_RESET", code: parsed.otp, consumedAt: null },
+  });
+
+  if (!record) {
+    throw Object.assign(new Error("Invalid or already used OTP"), { statusCode: 400 });
+  }
+
+  if (record.expiresAt.getTime() < Date.now()) {
+    throw Object.assign(new Error("OTP expired"), { statusCode: 400 });
+  }
+
+  return { verified: true };
+}
+
+export async function resetPasswordService(input: z.infer<typeof ResetPasswordSchema>) {
+  const parsed = ResetPasswordSchema.parse(input);
+
+  if (parsed.password !== parsed.confirmPassword) {
+    throw Object.assign(new Error("Passwords do not match"), { statusCode: 400 });
+  }
+
+  const user = await findUserByEmail(parsed.email);
+  if (!user) {
+    throw Object.assign(new Error("User not found"), { statusCode: 404 });
+  }
+
+  const record = await prisma.otp.findFirst({
+    where: { email: parsed.email, purpose: "PASSWORD_RESET", code: parsed.otp, consumedAt: null },
+  });
+
+  if (!record) {
+    throw Object.assign(new Error("Invalid or already used OTP"), { statusCode: 400 });
+  }
+
+  if (record.expiresAt.getTime() < Date.now()) {
+    throw Object.assign(new Error("OTP expired"), { statusCode: 400 });
+  }
+
+  const passwordHash = await bcrypt.hash(parsed.password, 10);
+
+  if (user.model === "Patient") {
+    await prisma.$transaction([
+      prisma.patient.update({ where: { id: user.user.id }, data: { passwordHash } }),
+      prisma.otp.update({ where: { id: record.id }, data: { consumedAt: new Date() } }),
+    ]);
+  } else if (user.model === "Doctor") {
+    await prisma.$transaction([
+      prisma.doctor.update({ where: { id: user.user.id }, data: { passwordHash } }),
+      prisma.otp.update({ where: { id: record.id }, data: { consumedAt: new Date() } }),
+    ]);
+  } else {
+    await prisma.$transaction([
+      prisma.administrator.update({ where: { id: user.user.id }, data: { passwordHash } }),
+      prisma.otp.update({ where: { id: record.id }, data: { consumedAt: new Date() } }),
+    ]);
+  }
+
+  return { reset: true };
+}
+
 export async function loginService(input: LoginInput) {
+
   const parsed = LoginSchema.parse(input);
 
   // Try each table by email

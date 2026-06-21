@@ -96,11 +96,39 @@ export const authApi = {
       }),
     }),
 
+  requestOtp: async (email: string, purpose = "EMAIL_VERIFICATION") =>
+    request("/api/auth/request-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, purpose }),
+    }),
+
+  requestPasswordResetOtp: async (email: string) =>
+    request<{ email: string; exists: boolean; otpId?: string; purpose?: string; code?: string; expiresAt?: string }>(
+      "/api/auth/request-password-reset",
+      {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      }
+    ),
+
+  verifyPasswordResetOtp: async (email: string, otp: string) =>
+    request<{ verified: true }>("/api/auth/verify-password-reset-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, otp }),
+    }),
+
+  resetPassword: async (email: string, otp: string, password: string, confirmPassword = password) =>
+    request<{ reset: true }>("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ email, otp, password, confirmPassword }),
+    }),
+
   verifyOtp: async (email: string, otp: string, purpose = "EMAIL_VERIFICATION") =>
     request("/api/auth/verify-otp", {
       method: "POST",
       body: JSON.stringify({ email, otp, purpose }),
     }),
+
 
   refreshToken: async () =>
     request<{ accessToken: string }>("/api/auth/refresh-token", {

@@ -15,6 +15,7 @@ type FormValues = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordPage() {
   const [done, setDone] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
@@ -25,15 +26,29 @@ export default function ForgotPasswordPage() {
     defaultValues: { email: "" },
   });
 
-  const onSubmit = async (_values: FormValues) => {
-    await new Promise((r) => setTimeout(r, 600));
-    setDone(true);
+  const onSubmit = async (values: FormValues) => {
+    setDone(false);
+    setServerError(null);
+
+    try {
+      const { authApi } = await import("@/lib/api-client");
+      const response = await authApi.requestPasswordResetOtp(values.email);
+
+      if (response.success && response.data?.exists) {
+        sessionStorage.setItem("recovery_email", values.email);
+      }
+
+      setDone(true);
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : "Password reset request failed. Please try again.");
+    }
   };
+
 
   return (
     <AuthShell
       title="Recover account access"
-      description="Password recovery flows through MFA-backed verification. You will receive a secure OTP to confirm ownership before resetting credentials."
+      description="Enter your email address below. We will send a secure one-time password (OTP) to this address to confirm ownership before resetting your credentials."
     >
       {done ? (
         <div className="space-y-6">
@@ -59,8 +74,13 @@ export default function ForgotPasswordPage() {
             <Input id="email" type="email" autoComplete="email" error={errors.email?.message} {...register("email")} />
           </div>
           <Button type="submit" className="w-full" size="lg" loading={isSubmitting}>
-            Send recovery link & OTP
+            Verify Email
           </Button>
+          {serverError ? (
+            <div className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+              {serverError}
+            </div>
+          ) : null}
           <p className="text-center text-sm text-muted">
             Remembered your password?{" "}
             <Link href="/auth/login" className="font-semibold text-accent hover:underline">

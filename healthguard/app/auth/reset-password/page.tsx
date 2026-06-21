@@ -6,39 +6,78 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
 import { AuthShell } from "@/components/layout/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { resetPasswordSchema } from "@/validations/auth";
-import type { z } from "zod";
+import { authApi } from "@/lib/api-client";
 
-type FormValues = z.infer<typeof resetPasswordSchema>;
+const resetPasswordFormSchema = z
+  .object({
+    otp: z.string().length(6, "Enter the 6-digit code").regex(/^\d+$/, "Digits only"),
+    password: z.string().min(8, "At least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type FormValues = z.infer<typeof resetPasswordFormSchema>;
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [showPw, setShowPw] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(resetPasswordSchema),
-    defaultValues: { password: "", confirmPassword: "" },
+    resolver: zodResolver(resetPasswordFormSchema),
+    defaultValues: { otp: "", password: "", confirmPassword: "" },
   });
 
-  const onSubmit = async (_values: FormValues) => {
-    await new Promise((r) => setTimeout(r, 550));
-    router.push("/auth/login?reset=success");
+  const onSubmit = async (values: FormValues) => {
+    setServerError(null);
+
+    const email = sessionStorage.getItem("recovery_email");
+    if (!email) {
+      router.push("/auth/forgot-password");
+      return;
+    }
+
+    try {
+      await authApi.resetPassword(email, values.otp, values.password);
+      sessionStorage.removeItem("recovery_email");
+      router.push("/auth/login?reset=success");
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : "Password reset failed. Please try again.");
+    }
   };
 
   return (
     <AuthShell
       title="Set a new password"
-      description="Choose a strong passphrase that you have not used previously with SPMS. Credential rotation is tracked for compliance reporting."
+      description="Enter the OTP sent to your verified email, then choose a strong passphrase that you have not used previously with SPMS."
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div className="space-y-2">
+          <Label htmlFor="otp">OTP code</Label>
+          <Input
+            id="otp"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="••••••"
+            maxLength={6}
+            className="tracking-[0.5em] font-mono text-lg"
+            error={errors.otp?.message}
+            {...register("otp")}
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="password">New password</Label>
           <div className="relative">
@@ -69,6 +108,12 @@ export default function ResetPasswordPage() {
             {...register("confirmPassword")}
           />
         </div>
+
+        {serverError ? (
+          <div className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+            {serverError}
+          </div>
+        ) : null}
 
         <Button type="submit" className="w-full" size="lg" loading={isSubmitting}>
           Update credentials

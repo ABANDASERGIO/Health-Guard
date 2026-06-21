@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AuthShell } from "@/components/layout/auth-shell";
@@ -14,7 +15,9 @@ import type { z } from "zod";
 type FormValues = z.infer<typeof otpSchema>;
 
 export default function VerifyOtpPage() {
+
   const router = useRouter();
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
@@ -25,15 +28,33 @@ export default function VerifyOtpPage() {
     defaultValues: { code: "" },
   });
 
-  const onSubmit = async (_values: FormValues) => {
-    await new Promise((r) => setTimeout(r, 500));
-    router.push("/auth/reset-password");
+  const onSubmit = async (values: FormValues) => {
+    setServerError(null);
+
+    const email = sessionStorage.getItem("recovery_email");
+    if (!email) {
+      router.push("/auth/forgot-password");
+      return;
+    }
+
+    try {
+      const response = await (await import("@/lib/api-client")).authApi.verifyPasswordResetOtp(email, values.code);
+      if (!response.success) {
+        // Keep user on page; backend returns statusCode/message
+        return;
+      }
+
+      router.push("/auth/reset-password");
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : "OTP verification failed. Please try again.");
+    }
   };
+
 
   return (
     <AuthShell
       title="Verify one-time passcode"
-      description="Enter the six-digit OTP delivered to your verified phone or authenticator. Codes expire quickly to reduce replay risk."
+      description="Enter the six-digit password reset OTP delivered to your verified email. Codes expire quickly to reduce replay risk."
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="rounded-2xl border border-border bg-muted-bg/60 px-4 py-3 text-sm text-muted">
@@ -58,6 +79,12 @@ export default function VerifyOtpPage() {
         <Button type="submit" className="w-full" size="lg" loading={isSubmitting}>
           Verify & continue
         </Button>
+
+        {serverError ? (
+          <div className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
+            {serverError}
+          </div>
+        ) : null}
 
         <p className="text-center text-sm text-muted">
           Wrong channel?{" "}
