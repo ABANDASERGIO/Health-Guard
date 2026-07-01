@@ -26,7 +26,7 @@ export default function AboutPage() {
               <div>
                 <h2 className="text-lg font-semibold">Secure access & approvals</h2>
                 <p className="mt-2 text-sm text-muted">
-                  Doctors request access, patients approve with OTP, and every action is logged for transparency.
+                  Doctors request access, patients approve with a secure code, and every action is logged for transparency.
                 </p>
               </div>
             </div>
@@ -54,7 +54,7 @@ export default function AboutPage() {
               <div>
                 <h2 className="text-lg font-semibold">Security-first design</h2>
                 <p className="mt-2 text-sm text-muted">
-                  Encryptions, session timeout handling, and strict role separation help reduce risk.
+                  Security controls, session timeout handling, and strict role separation help reduce risk.
                 </p>
               </div>
             </div>

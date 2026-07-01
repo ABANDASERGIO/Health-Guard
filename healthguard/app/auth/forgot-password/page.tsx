@@ -48,17 +48,17 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Recover account access"
-      description="Enter your email address below. We will send a secure one-time password (OTP) to this address to confirm ownership before resetting your credentials."
+      description="Enter your email address below. We will send a secure verification code to this address to confirm ownership before resetting your credentials."
     >
       {done ? (
         <div className="space-y-6">
           <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-4 text-sm text-emerald-900 dark:text-emerald-100">
-            If the email exists in our directory, recovery instructions and an OTP have been dispatched to your secure
-            inbox.
+            If the email exists in our directory, recovery instructions and a verification code have been dispatched to
+            your secure inbox.
           </div>
           <Link href="/auth/verify-otp" className="block">
             <Button variant="secondary" className="w-full" type="button">
-              Continue to OTP verification
+              Continue to code verification
             </Button>
           </Link>
           <p className="text-center text-sm text-muted">

@@ -26,7 +26,7 @@ export default function PatientActivityPage() {
     <div className="space-y-8">
       <PageHeader
         title="Activity & audit logs"
-        description="Immutable-style timeline for PHI touches, authentications, and patient-approved disclosures."
+        description="Immutable-style timeline for access events, authentications, and patient-approved disclosures."
       />
 
       <EncryptionBanner variant="compact" />
@@ -73,7 +73,7 @@ export default function PatientActivityPage() {
       <Card>
          <CardHeader>
            <CardTitle>Structured audit export</CardTitle>
-           <CardDescription>Production deployments stream these rows to your SIEM · CSV export mocked below.</CardDescription>
+           <CardDescription>Production deployments stream these rows to your audit archive. CSV export mocked below.</CardDescription>
          </CardHeader>
          <CardContent className="overflow-x-auto rounded-xl border border-border">
            <table className="w-full text-sm">

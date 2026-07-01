@@ -40,8 +40,8 @@ export function OtpPageClient() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title="OTP verification"
-        description="Enter the patient-provided one-time password to unlock a time-scoped PHI session."
+        title="Verification code"
+        description="Enter the patient-provided verification code to unlock a time-scoped secure session."
       />
 
       <EncryptionBanner variant="compact" />
@@ -58,12 +58,12 @@ export function OtpPageClient() {
             <KeyRound className="size-5 text-primary" />
             Challenge-response
           </CardTitle>
-          <CardDescription>OTP rotates after each approval · attempts audit-logged.</CardDescription>
+          <CardDescription>Codes rotate after each approval and are tracked for transparency.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="max-w-md space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
-              <Label htmlFor="code">Patient OTP</Label>
+              <Label htmlFor="code">Verification code</Label>
               <Input
                 id="code"
                 inputMode="numeric"

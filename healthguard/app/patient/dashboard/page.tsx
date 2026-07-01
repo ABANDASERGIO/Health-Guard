@@ -76,10 +76,10 @@ export default function PatientDashboardPage() {
     <div className="space-y-8">
       <PageHeader
         title={`Welcome back, ${user?.name?.split(" ")[0] ?? "Patient"}`}
-        description="Your monitoring workspace summarizes encrypted vitals, appointments, and clinician requests in one HIPAA-conscious dashboard."
+        description="Your monitoring workspace summarizes protected vitals, appointments, and clinician requests in one HIPAA-conscious dashboard."
         actions={
           <Badge variant="success" className="hidden sm:inline-flex">
-            JWT session active
+            Session active
           </Badge>
         }
       />
@@ -90,7 +90,7 @@ export default function PatientDashboardPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Recent medical activity</CardTitle>
-            <CardDescription>Latest verified updates across your encrypted chart.</CardDescription>
+            <CardDescription>Latest verified updates across your care summary.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {activities.length === 0 ? (
@@ -130,7 +130,7 @@ export default function PatientDashboardPage() {
                 <Calendar className="size-5 text-primary" />
                 Upcoming appointments
               </CardTitle>
-              <CardDescription>Encrypted scheduling references.</CardDescription>
+              <CardDescription>Protected scheduling references.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {appointments.length === 0 ? (
@@ -142,7 +142,7 @@ export default function PatientDashboardPage() {
                       <p className="font-semibold">{ap.specialty}</p>
                       {ap.encrypted ? (
                         <Badge variant="primary" className="gap-1">
-                          <ShieldCheck className="size-3" /> Encrypted
+                          <ShieldCheck className="size-3" /> Protected
                         </Badge>
                       ) : null}
                     </div>

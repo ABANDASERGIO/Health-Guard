@@ -39,13 +39,12 @@ export function EncryptionBanner({
         <div>
           <p className="font-semibold text-foreground">Protected Health Information</p>
           <p className="mt-1 max-w-xl text-sm text-muted">
-            Data in transit and at rest is encrypted. Access is audited and role-restricted per HIPAA-style
-            controls in this demonstration environment.
+            Data is protected and access is limited to the right care team members.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Badge variant="primary">AES-256 UI</Badge>
-            <Badge variant="success">JWT session</Badge>
-            <Badge variant="outline">Audit logging</Badge>
+            <Badge variant="primary">Protected view</Badge>
+            <Badge variant="success">Active session</Badge>
+            <Badge variant="outline">Access tracking</Badge>
           </div>
         </div>
       </div>

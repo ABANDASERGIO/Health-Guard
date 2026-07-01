@@ -205,7 +205,7 @@ export default function PatientProfilePage() {
 
               {isEditing ? (
                 <div className="rounded-2xl bg-muted-bg/40 p-4 text-sm text-muted">
-                  Changes are saved to the backend database.
+                  Changes are saved securely.
                 </div>
               ) : null}
             </div>

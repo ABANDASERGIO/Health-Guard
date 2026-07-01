@@ -249,12 +249,12 @@ export default function DoctorDashboardPage() {
             <Users className="size-5" />
             Access request tracking
           </CardTitle>
-          <CardDescription>OTP workflows mirror patient approvals — track status centrally.</CardDescription>
+          <CardDescription>Verification workflows mirror patient approvals — track status centrally.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <LinkButton href="/doctor/access/request">Compose request</LinkButton>
           <LinkButton href="/doctor/access/otp" variant="outline">
-            Verify OTP
+            Verify code
           </LinkButton>
           <LinkButton href="/doctor/access/status" variant="secondary">
             Approval status

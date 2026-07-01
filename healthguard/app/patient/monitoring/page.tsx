@@ -67,7 +67,7 @@ export default function PatientMonitoringPage() {
     try {
       const { patientApi } = await import("@/lib/api-client");
       await patientApi.recordVital(data);
-      setSaved("Vitals encrypted and queued for clinician review.");
+      setSaved("Vitals saved and queued for clinician review.");
       reset();
       setVitals((prev) => [
         {
@@ -123,11 +123,11 @@ export default function PatientMonitoringPage() {
               <Shield className="size-5 text-primary" />
               Monitoring summary
             </CardTitle>
-            <CardDescription>Encrypted buffers replicate to your audit trail within seconds.</CardDescription>
+            <CardDescription>Secure data syncs to your care timeline within seconds.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="primary">AES-256 payload UI</Badge>
-            <Badge variant="outline">PHI segmentation</Badge>
+            <Badge variant="primary">Secure transfer</Badge>
+            <Badge variant="outline">Protected data</Badge>
             <Badge variant="success">Patient-entered data</Badge>
           </CardContent>
         </Card>
@@ -167,11 +167,11 @@ export default function PatientMonitoringPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="symptoms">Symptoms</Label>
-                <Textarea id="symptoms" placeholder="Optional notes — encrypted at rest in production integrations." {...register("symptoms")} />
+                <Textarea id="symptoms" placeholder="Optional notes — kept private in production integrations." {...register("symptoms")} />
               </div>
 
               <Button type="submit" loading={isSubmitting} className="w-full">
-                Submit encrypted vitals
+                Submit vitals securely
               </Button>
               {saved ? <p className="text-center text-sm text-emerald-700 dark:text-emerald-300">{saved}</p> : null}
             </form>

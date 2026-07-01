@@ -46,19 +46,19 @@ export default function VerifyOtpPage() {
 
       router.push("/auth/reset-password");
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "OTP verification failed. Please try again.");
+      setServerError(err instanceof Error ? err.message : "Verification failed. Please try again.");
     }
   };
 
 
   return (
     <AuthShell
-      title="Verify one-time passcode"
-      description="Enter the six-digit password reset OTP delivered to your verified email. Codes expire quickly to reduce replay risk."
+      title="Confirm verification code"
+      description="Enter the six-digit code sent to your email. Codes expire quickly to reduce reuse risk."
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="rounded-2xl border border-border bg-muted-bg/60 px-4 py-3 text-sm text-muted">
-          Demo OTP: use any six digits (for example{" "}
+          Demo code: use any six digits (for example{" "}
           <span className="font-mono font-semibold text-foreground">482913</span>) to advance the workflow.
         </div>
 

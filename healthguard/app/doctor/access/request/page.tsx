@@ -92,15 +92,15 @@ export default function DoctorAccessRequestPage() {
     <div className="space-y-8">
       <PageHeader
         title="Access request"
-        description="Structured justification captures medical necessity for patient-side approval and OTP verification."
+        description="Structured justification captures medical necessity for patient-side approval and secure verification."
       />
 
       <EncryptionBanner variant="compact" />
 
       <Card>
         <CardHeader>
-          <CardTitle>Request encrypted chart access</CardTitle>
-          <CardDescription>Minimum necessary doctrine · auto-logged to compliance exports.</CardDescription>
+          <CardTitle>Request secure chart access</CardTitle>
+          <CardDescription>Minimum necessary request · auto-logged for transparency.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="grid gap-6 md:grid-cols-2" onSubmit={handleSubmit(onSubmit)} noValidate>

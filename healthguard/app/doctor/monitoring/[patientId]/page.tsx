@@ -54,7 +54,7 @@ export default function DoctorMonitoringPage() {
     <div className="space-y-8">
       <PageHeader
         title="Patient monitoring"
-        description={`Encrypted longitudinal review · cohort member ${patientId?.toUpperCase() ?? ""}`}
+        description={`Longitudinal review · cohort member ${patientId?.toUpperCase() ?? ""}`}
       />
 
       <EncryptionBanner variant="compact" />
@@ -81,7 +81,7 @@ export default function DoctorMonitoringPage() {
               <ClipboardPlus className="size-5 text-primary" />
               Doctor updates
             </CardTitle>
-            <CardDescription>Add encrypted diagnoses, Rx, and commentary.</CardDescription>
+            <CardDescription>Add diagnoses, Rx, and commentary.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -94,11 +94,11 @@ export default function DoctorMonitoringPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">Doctor notes</Label>
-              <Textarea id="notes" rows={5} placeholder="Structured note stored as PHI · encrypted at rest." />
+              <Textarea id="notes" rows={5} placeholder="Structured note stored securely for the patient record." />
             </div>
             <Button type="button" className="w-full gap-2">
               <Pill className="size-4" />
-              Save to encrypted chart
+              Save to chart
             </Button>
           </CardContent>
         </Card>

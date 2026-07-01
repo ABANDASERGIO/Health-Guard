@@ -22,8 +22,8 @@ export default function HomePage() {
             <Shield className="size-6" />
           </span>
           <div>
-            <p className="text-sm font-semibold leading-tight">Secure Patient Monitoring System</p>
-            <p className="text-xs text-muted">Healthcare intelligence · Encrypted by design</p>
+          <p className="text-sm font-semibold leading-tight">HealthGuard</p>
+          <p className="text-xs text-muted">Healthcare intelligence · Protected by design</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -73,7 +73,7 @@ export default function HomePage() {
                 href="/auth/login"
                 className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-xl shadow-primary/25 hover:opacity-95"
               >
-                Enter secure workspace
+                Enter the workspace
                 <ArrowRight className="size-4" />
               </Link>
               <Link
@@ -119,8 +119,8 @@ export default function HomePage() {
                 <div>
                   <h2 className="text-lg font-semibold">Trusted care workflows</h2>
                   <p className="mt-2 text-sm text-muted">
-                    Doctors request access, patients approve with OTP, and every action is surfaced in activity logs with
-                    security-first presentation.
+                    Doctors request access, patients approve securely, and every action is surfaced in activity logs with
+                      privacy-first presentation.
                   </p>
                 </div>
               </div>
@@ -132,7 +132,7 @@ export default function HomePage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl bg-muted-bg px-4 py-3">
-                  <span className="text-sm font-medium">Patient-controlled PHI sharing</span>
+                  <span className="text-sm font-medium">Patient-controlled sharing</span>
                   <span className="rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
                     Enabled
                   </span>

@@ -6,7 +6,7 @@ export default function DoctorAccessOtpPage() {
     <Suspense
       fallback={
         <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted">
-          Loading OTP challenge…
+          Loading verification challenge…
         </div>
       }
     >

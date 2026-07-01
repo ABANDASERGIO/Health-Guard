@@ -61,11 +61,11 @@ export default function ResetPasswordPage() {
   return (
     <AuthShell
       title="Set a new password"
-      description="Enter the OTP sent to your verified email, then choose a strong passphrase that you have not used previously with SPMS."
+      description="Enter the code sent to your verified email, then choose a strong passphrase that you have not used previously with HealthGuard."
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="space-y-2">
-          <Label htmlFor="otp">OTP code</Label>
+          <Label htmlFor="otp">Verification code</Label>
           <Input
             id="otp"
             inputMode="numeric"

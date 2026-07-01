@@ -124,7 +124,7 @@ export default function PatientDocumentsPage() {
         <div className="hidden sm:block">
           <div className="rounded-2xl border border-border bg-card px-4 py-3">
             <p className="text-sm font-medium">Security</p>
-            <p className="mt-1 text-xs text-muted">Encrypted at rest & role-aware access in the platform.</p>
+            <p className="mt-1 text-xs text-muted">Protected and role-aware access in the platform.</p>
           </div>
         </div>
       </div>
@@ -192,7 +192,7 @@ export default function PatientDocumentsPage() {
           <div className="mt-6 rounded-2xl bg-muted-bg/40 p-4">
             <p className="text-sm font-semibold">Tip</p>
             <p className="mt-1 text-sm text-muted">
-              After uploading, your document appears immediately in this demo UI. Hook up backend storage when ready.
+              After uploading, your document appears immediately in the list for review and sharing with your care team.
             </p>
           </div>
         </section>
