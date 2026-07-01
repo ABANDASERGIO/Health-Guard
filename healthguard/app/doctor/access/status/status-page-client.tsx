@@ -13,6 +13,8 @@ export function StatusPageClient() {
   const state = params.get("state");
 
   const granted = state === "granted";
+  const pending = !granted;
+
 
   return (
     <div className="space-y-8">
@@ -32,11 +34,11 @@ export function StatusPageClient() {
               <Clock className="size-10 text-amber-600 dark:text-amber-400" />
             )}
             <div>
-              <CardTitle>{granted ? "Secure access granted" : "Awaiting patient approval"}</CardTitle>
+              <CardTitle>{granted ? "Secure access granted" : "Awaiting patient decision"}</CardTitle>
               <CardDescription>
                 {granted
                   ? "Session unlock expires automatically · all chart views emit audit events."
-                  : "Patients receive encrypted notifications with OTP issuance upon approval."}
+                  : "The patient will approve or reject the request. Notifications are sent to the doctor automatically."}
               </CardDescription>
             </div>
           </div>

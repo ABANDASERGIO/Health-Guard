@@ -26,6 +26,21 @@ model Patient {
   passwordHash String
   name         String
   avatar       String?
+  phone        String?
+  address      String?
+  emergencyContact String?
+
+  vitals      VitalReading[]
+  records     MedicalRecord[]
+  accessRequests AccessRequest[]
+  activityLogs ActivityLog[]
+  documents   Document[]
+  alerts       Alert[]
+  appointments Appointment[]
+  medicalHistory MedicalHistory[]
+  diagnoses Diagnosis[]
+  prescriptions Prescription[]
+  doctorNotes DoctorNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,6 +55,9 @@ model Doctor {
 
   hospitalId String
   hospital   Hospital @relation(fields: [hospitalId], references: [id])
+
+  accessRequests AccessRequest[]
+  alerts         Alert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,3 +90,167 @@ model Otp {
   @@index([email, purpose])
 }
 
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  userRole  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+}
+
+model VitalReading {
+  id         String   @id @default(cuid())
+  patientId  String
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  date       DateTime @default(now())
+  temperature Float?
+  systolic   Float?
+  diastolic  Float?
+  heartRate  Float?
+  weight     Float?
+  symptoms   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MedicalRecord {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  type      String
+  title     String
+  content   String?
+  fileUrl   String?
+  createdAt DateTime @default(now())
+}
+
+model AccessRequest {
+  id       String   @id @default(cuid())
+  patientId String
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  doctorId String
+  doctor   Doctor   @relation(fields: [doctorId], references: [id])
+  reason   String
+  priority String   @default("NORMAL")
+  status   String   @default("PENDING")
+  otp      String?
+  notes    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  actor     String
+  action    String
+  resource  String
+  ip        String?
+  createdAt DateTime @default(now())
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  name      String
+  type      String
+  url       String?
+  fileId    String?
+
+  createdAt DateTime @default(now())
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  doctorId String
+  doctor   Doctor   @relation(fields: [doctorId], references: [id])
+  patientId String
+  patient  Patient  @relation(fields: [patientId], references: [id])
+  title     String
+  description String
+  severity String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  audience  String
+  title     String
+  description String
+  type      String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([audience, read])
+}
+
+model Appointment {
+  id          String   @id @default(cuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  specialty   String
+  provider    String
+  datetime    DateTime
+  location    String
+  encrypted   Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+}
+
+model MedicalHistory {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  date      DateTime
+  event     String
+  facility  String
+
+  createdAt DateTime @default(now())
+}
+
+model Diagnosis {
+  id      String @id @default(cuid())
+  patientId String
+  patient Patient @relation(fields: [patientId], references: [id])
+  code    String
+  name    String
+  status  String
+  since   String?
+
+  createdAt DateTime @default(now())
+}
+
+model Prescription {
+  id        String @id @default(cuid())
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+  drug      String
+  dose      String
+  sig       String
+  refills   Int
+  expires   DateTime
+
+  createdAt DateTime @default(now())
+}
+
+model DoctorNote {
+  id        String @id @default(cuid())
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+  author    String
+  date      DateTime
+  note      String
+  encrypted Boolean @default(true)
+
+  createdAt DateTime @default(now())
+}

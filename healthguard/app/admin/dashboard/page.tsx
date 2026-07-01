@@ -1,12 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { AnalyticsBarChart } from "@/components/charts/analytics-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { LinkButton } from "@/components/ui/link-button";
-import { adminSummaryCards } from "@/mock-data/admin";
+
+type SummaryCard = {
+  label: string;
+  value: string | number;
+  trend: string;
+  status: "success" | "warning" | "neutral";
+};
 
 const growth = [
   { name: "Jan", value: 820 },
@@ -16,6 +23,18 @@ const growth = [
 ];
 
 export default function AdminDashboardPage() {
+  const [summary, setSummary] = useState<SummaryCard[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { adminApi } = await import("@/lib/api-client");
+      const res = await adminApi.getDashboardStats();
+      if (res.success && Array.isArray(res.data)) {
+        setSummary(res.data as SummaryCard[]);
+      }
+    })();
+  }, []);
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -31,20 +50,24 @@ export default function AdminDashboardPage() {
       <EncryptionBanner variant="compact" />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {adminSummaryCards.map((c) => (
-          <Card key={c.label}>
-            <CardHeader className="pb-2">
-              <CardDescription>{c.label}</CardDescription>
-              <CardTitle className="text-3xl">{c.value}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted">{c.trend}</p>
-              <Badge variant={c.status === "success" ? "success" : c.status === "warning" ? "warning" : "outline"} className="mt-3">
-                Monitored
-              </Badge>
-            </CardContent>
-          </Card>
-        ))}
+        {summary.length === 0 ? (
+          <p className="text-sm text-muted">No stats available.</p>
+        ) : (
+          summary.map((c) => (
+            <Card key={c.label}>
+              <CardHeader className="pb-2">
+                <CardDescription>{c.label}</CardDescription>
+                <CardTitle className="text-3xl">{c.value}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted">{c.trend}</p>
+                <Badge variant={c.status === "success" ? "success" : c.status === "warning" ? "warning" : "outline"} className="mt-3">
+                  Monitored
+                </Badge>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       <AnalyticsBarChart title="Monthly active clinician sessions (000s)" data={growth} dataKey="value" />

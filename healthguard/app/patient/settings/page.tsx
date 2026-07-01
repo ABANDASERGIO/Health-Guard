@@ -1,10 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function PatientSettingsPage() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const { authApi, clearAuthToken } = await import("@/lib/api-client");
+    await authApi.logout();
+    clearAuthToken();
+    router.push("/auth/login");
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -20,12 +30,12 @@ export default function PatientSettingsPage() {
               <Button type="button" variant="secondary" className="w-full" disabled>
                 Change Password
               </Button>
-              <Button type="button" variant="secondary" className="w-full" disabled>
+              <Button type="button" variant="secondary" className="w-full" onClick={handleLogout}>
                 Logout
               </Button>
 
               <div className="rounded-2xl bg-muted-bg/40 p-4 text-sm text-muted">
-                These controls are placeholders. Wire them to backend endpoints next.
+                Use the logout button to end your session securely.
               </div>
             </div>
           </CardContent>
@@ -72,4 +82,3 @@ export default function PatientSettingsPage() {
     </div>
   );
 }
-

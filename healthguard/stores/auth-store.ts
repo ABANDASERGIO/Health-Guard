@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User, UserRole } from "@/types";
 import { clearAuthCookies, setAuthCookies } from "@/lib/auth-cookies";
-import { authApi, setAuthToken, clearAuthToken } from "@/lib/api-client";
+import { authApi, setAuthToken, setRefreshToken, clearAuthToken } from "@/lib/api-client";
 
 interface AuthState {
   user: User | null;
@@ -25,40 +25,41 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
 
-      login: async (email: string, password: string, _role: UserRole) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response = await authApi.login(email, password);
+login: async (email: string, password: string, _role: UserRole) => {
+         set({ isLoading: true, error: null });
+         try {
+           const response = await authApi.login(email, password);
 
-          if (!response.success || !response.data) {
-            throw new Error(response.error || "Login failed");
-          }
+           if (!response.success || !response.data) {
+             throw new Error(response.error || "Login failed");
+           }
 
-          const { user, accessToken } = response.data;
+           const { user, accessToken, refreshToken } = response.data;
 
-          // Convert backend role format to frontend format
-          const frontendRole = user.role.toLowerCase() as UserRole;
+           // Convert backend role format to frontend format
+           const frontendRole = user.role.toLowerCase() as UserRole;
 
-          const userData: User = {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: frontendRole,
-            avatar: user.avatar,
-          };
+           const userData: User = {
+             id: user.id,
+             email: user.email,
+             name: user.name,
+             role: frontendRole,
+             avatar: user.avatar,
+           };
 
-          // Store token and user
-          setAuthToken(accessToken);
-          setAuthCookies(frontendRole);
+           // Store token and user
+           setAuthToken(accessToken);
+           setRefreshToken(refreshToken);
+           setAuthCookies(frontendRole);
 
-          set({ user: userData, token: accessToken, isLoading: false });
-        } catch (err) {
-          const errorMessage =
-            err instanceof Error ? err.message : "Authentication failed. Please try again.";
-          set({ error: errorMessage, isLoading: false });
-          throw err;
-        }
-      },
+           set({ user: userData, token: accessToken, isLoading: false });
+         } catch (err) {
+           const errorMessage =
+             err instanceof Error ? err.message : "Authentication failed. Please try again.";
+           set({ error: errorMessage, isLoading: false });
+           throw err;
+         }
+       },
 
       logout: async () => {
         try {

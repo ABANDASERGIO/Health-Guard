@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Filter, Search } from "lucide-react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { Badge } from "@/components/ui/badge";
@@ -9,20 +9,49 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { LinkButton } from "@/components/ui/link-button";
-import { patientSearchResults } from "@/mock-data/doctor";
+
+type PatientResult = {
+  mrn: string;
+  name: string;
+  dob: string;
+  sex: string;
+  lastVisit: string;
+  access: "none" | "approved_until";
+  accessDetail?: string;
+};
 
 export default function DoctorPatientsPage() {
   const [q, setQ] = useState("");
   const [risk, setRisk] = useState<"all" | "needs-access">("all");
+  const [patients, setPatients] = useState<PatientResult[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { doctorApi } = await import("@/lib/api-client");
+      const res = await doctorApi.getPatients(1, 50);
+      if (res.success && Array.isArray(res.data)) {
+        const mapped = (res.data as any[]).map((p) => ({
+          mrn: p.id?.slice(0, 8) ?? "Unknown",
+          name: p.name,
+          dob: p.dob || "Unknown",
+          sex: p.sex || "Unknown",
+          lastVisit: p.lastVisit || "Never",
+          access: p.access || "none",
+          accessDetail: p.accessDetail,
+        }));
+        setPatients(mapped);
+      }
+    })();
+  }, []);
 
   const rows = useMemo(() => {
-    return patientSearchResults.filter((p) => {
+    return patients.filter((p) => {
       const match =
         p.name.toLowerCase().includes(q.toLowerCase()) || p.mrn.toLowerCase().includes(q.toLowerCase());
       const accessOk = risk === "all" ? true : p.access === "none";
       return match && accessOk;
     });
-  }, [q, risk]);
+  }, [q, risk, patients]);
 
   return (
     <div className="space-y-8">

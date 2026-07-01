@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { KeyRound } from "lucide-react";
@@ -31,8 +32,9 @@ export function OtpPageClient() {
   });
 
   const onSubmit = async (_values: FormValues) => {
-    await new Promise((r) => setTimeout(r, 500));
-    router.push("/doctor/access/status?state=granted");
+    // Doctor access requests do not require an OTP from the doctor.
+    // Patient approval/rejection drives the notification and the final access state.
+    router.push("/doctor/access/status?state=pending");
   };
 
   return (

@@ -35,12 +35,12 @@ async function fetchHospitals(page = 1, limit = 50): Promise<HospitalRecord[]> {
 
 
 interface HospitalsState {
-  hospitals: HospitalRecord[];
-  setHospitals: (rows: HospitalRecord[]) => void;
-  fetchHospitals: (page?: number, limit?: number) => Promise<void>;
-  upsertHospital: (h: HospitalRecord) => Promise<void>;
-  removeHospital: (id: string) => Promise<void>;
-}
+   hospitals: HospitalRecord[];
+   setHospitals: (rows: HospitalRecord[]) => void;
+   fetchHospitals: (page?: number, limit?: number) => Promise<void>;
+   upsertHospital: (h: HospitalRecord) => Promise<void>;
+   removeHospital: (id: string) => Promise<void>;
+ }
 
 
 export const useHospitalsStore = create<HospitalsState>()(
@@ -64,6 +64,7 @@ export const useHospitalsStore = create<HospitalsState>()(
       },
 
       removeHospital: async (id) => {
+        await adminApi.deleteHospital(id);
         set((state) => ({ hospitals: state.hospitals.filter((x) => x.id !== id) }));
       },
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText, Image as ImageIcon, ShieldCheck, Sparkles, Upload } from "lucide-react";
 
 type DocType = "pdf" | "image" | "lab" | "xray" | "prescription" | "referral";
@@ -66,21 +66,24 @@ function formatDate(d: Date) {
 export default function PatientDocumentsPage() {
   const [activeType, setActiveType] = useState<DocType>("pdf");
   const [uploading, setUploading] = useState(false);
+  const [docs, setDocs] = useState<UploadDoc[]>([]);
 
-  const [docs, setDocs] = useState<UploadDoc[]>([
-    {
-      id: "seed-1",
-      type: "pdf",
-      name: "Diagnosis Timeline.pdf",
-      createdAt: formatDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 4)),
-    },
-    {
-      id: "seed-2",
-      type: "lab",
-      name: "Lab Results - CBC.pdf",
-      createdAt: formatDate(new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)),
-    },
-  ]);
+  useEffect(() => {
+    (async () => {
+      const { patientApi } = await import("@/lib/api-client");
+      const res = await patientApi.getMedicalRecords();
+      if (res.success && res.data) {
+        const data = res.data as any;
+        const mapped = (data.documents || []).map((d: any) => ({
+          id: d.id,
+          type: "pdf" as DocType,
+          name: d.name,
+          createdAt: formatDate(new Date(d.createdAt || Date.now())),
+        }));
+        setDocs(mapped);
+      }
+    })();
+  }, []);
 
   const activeMeta = typeMeta[activeType];
 
@@ -252,4 +255,3 @@ export default function PatientDocumentsPage() {
     </div>
   );
 }
-

@@ -2,36 +2,69 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { notificationApi } from "@/lib/api-client";
 import type { UserRole } from "@/types";
-import type { SeededNotification } from "@/mock-data/notifications-seed";
-import { notificationsSeed } from "@/mock-data/notifications-seed";
+
+export interface NotificationRecord {
+  id: string;
+  title: string;
+  description: string;
+  type: "access" | "health" | "message" | "security" | "system";
+  read: boolean;
+  createdAt: string;
+  audience: UserRole;
+  link?: string;
+}
 
 interface NotificationsState {
-  items: SeededNotification[];
-  markRead: (id: string) => void;
-  markAllReadForRole: (role: UserRole) => void;
-  addNotification: (n: Omit<SeededNotification, "read"> & { read?: boolean }) => void;
+  items: NotificationRecord[];
+  loading: boolean;
+  fetch: () => Promise<void>;
+  markRead: (id: string) => Promise<void>;
+  markAllRead: () => Promise<void>;
+  add: (n: Omit<NotificationRecord, "id" | "createdAt">) => Promise<void>;
 }
 
 export const useNotificationsStore = create<NotificationsState>()(
   persist(
-    (set) => ({
-      items: [...notificationsSeed],
+    (set, get) => ({
+      items: [],
+      loading: false,
 
-      markRead: (id) =>
-        set((state) => ({
-          items: state.items.map((i) => (i.id === id ? { ...i, read: true } : i)),
-        })),
+      fetch: async () => {
+        set({ loading: true });
+        try {
+          const response = await notificationApi.getNotifications();
+          if (response.success && Array.isArray(response.data)) {
+            set({ items: response.data as NotificationRecord[] });
+          }
+        } catch (err) {
+          console.error("Failed to fetch notifications:", err);
+        } finally {
+          set({ loading: false });
+        }
+      },
 
-      markAllReadForRole: (role) =>
+      markRead: async (id) => {
+        await notificationApi.markRead(id);
         set((state) => ({
-          items: state.items.map((i) => (i.audience === role ? { ...i, read: true } : i)),
-        })),
+          items: state.items.map((item) => (item.id === id ? { ...item, read: true } : item)),
+        }));
+      },
 
-      addNotification: (n) =>
+      markAllRead: async () => {
+        await notificationApi.markAllRead();
         set((state) => ({
-          items: [{ ...n, read: n.read ?? false }, ...state.items],
-        })),
+          items: state.items.map((item) => ({ ...item, read: true })),
+        }));
+      },
+
+      add: async (n) => {
+        const tempId = `local-${Date.now()}`;
+        set((state) => ({
+          items: [{ ...n, id: tempId, createdAt: new Date().toISOString() }, ...state.items],
+        }));
+      },
     }),
     {
       name: "spms-notifications",
@@ -40,12 +73,12 @@ export const useNotificationsStore = create<NotificationsState>()(
   )
 );
 
-export function selectNotificationsForRole(role: UserRole | undefined, items: SeededNotification[]) {
+export function selectNotificationsForRole(role: UserRole | undefined, items: NotificationRecord[]) {
   if (!role) return [];
   return items.filter((i) => i.audience === role);
 }
 
-export function unreadCountForRole(role: UserRole | undefined, items: SeededNotification[]) {
+export function unreadCountForRole(role: UserRole | undefined, items: NotificationRecord[]) {
   if (!role) return 0;
   return items.filter((i) => i.audience === role && !i.read).length;
 }

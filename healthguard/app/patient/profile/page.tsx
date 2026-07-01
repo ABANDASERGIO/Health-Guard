@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,26 +14,59 @@ function initialsFromName(name?: string | null) {
   return (first + last).toUpperCase() || "P";
 }
 
+type Profile = {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  emergencyContact?: string | null;
+};
+
 export default function PatientProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
-
-  // TODO: Replace with real patient profile from backend.
-  const [fullName, setFullName] = useState("John Doe");
-  const [email, setEmail] = useState("john.doe@example.com");
-  const [phone, setPhone] = useState("+1 (555) 123-4567");
-  const [address, setAddress] = useState("221B Health St, City");
-  const [emergencyContact, setEmergencyContact] = useState("Jane Doe (+1 (555) 987-6543)");
-
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [profilePreviewUrl, setProfilePreviewUrl] = useState<string | null>(null);
 
-  const initials = useMemo(() => initialsFromName(fullName), [fullName]);
+  const initials = useMemo(() => initialsFromName(profile?.name), [profile?.name]);
+
+  useEffect(() => {
+    (async () => {
+      const { patientApi } = await import("@/lib/api-client");
+      const res = await patientApi.getProfile();
+      if (res.success && res.data) {
+        setProfile(res.data as Profile);
+      }
+    })();
+  }, []);
 
   const onPickProfileImage = async (file: File | null) => {
     if (!file) return;
-    // Preview only for now; hook to backend when available.
     const url = URL.createObjectURL(file);
     setProfilePreviewUrl(url);
   };
+
+  const onSave = async () => {
+    if (!profile) return;
+    const { patientApi } = await import("@/lib/api-client");
+    const res = await patientApi.updateProfile({
+      name: profile.name,
+      avatar: profilePreviewUrl || profile.avatar || undefined,
+      phone: profile.phone || undefined,
+      address: profile.address || undefined,
+      emergencyContact: profile.emergencyContact || undefined,
+    });
+    if (res.success && res.data) {
+      setProfile(res.data as Profile);
+      setProfilePreviewUrl(null);
+      setIsEditing(false);
+    }
+  };
+
+  if (!profile) {
+    return <div className="p-6">Loading profile...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -54,9 +87,9 @@ export default function PatientProfilePage() {
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-3xl font-bold text-primary">
-                    {profilePreviewUrl ? (
+                    {profilePreviewUrl || profile.avatar ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={profilePreviewUrl} alt="Profile" className="size-full object-cover" />
+                      <img src={profilePreviewUrl || profile.avatar || ""} alt="Profile" className="size-full object-cover" />
                     ) : (
                       <span className="leading-none">{initials}</span>
                     )}
@@ -83,27 +116,27 @@ export default function PatientProfilePage() {
 
               <div className="space-y-2">
                 <p className="text-sm font-semibold">Full Name</p>
-                <p className="text-sm text-muted">{fullName}</p>
+                <p className="text-sm text-muted">{profile.name}</p>
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm font-semibold">Email</p>
-                <p className="text-sm text-muted">{email}</p>
+                <p className="text-sm text-muted">{profile.email}</p>
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm font-semibold">Phone Number</p>
-                <p className="text-sm text-muted">{phone}</p>
+                <p className="text-sm text-muted">{profile.phone || "Not set"}</p>
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm font-semibold">Address</p>
-                <p className="text-sm text-muted">{address}</p>
+                <p className="text-sm text-muted">{profile.address || "Not set"}</p>
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm font-semibold">Emergency Contact</p>
-                <p className="text-sm text-muted">{emergencyContact}</p>
+                <p className="text-sm text-muted">{profile.emergencyContact || "Not set"}</p>
               </div>
             </div>
           </CardContent>
@@ -131,12 +164,7 @@ export default function PatientProfilePage() {
                     >
                       Cancel
                     </Button>
-                    <Button
-                      onClick={() => {
-                        // TODO: persist to backend
-                        setIsEditing(false);
-                      }}
-                    >
+                    <Button onClick={onSave}>
                       Save Changes
                     </Button>
                   </>
@@ -147,37 +175,37 @@ export default function PatientProfilePage() {
             <div className="mt-6 grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="fullName">Full Name</Label>
-                <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} disabled={!isEditing} />
+                <Input id="fullName" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} disabled={!isEditing} />
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={!isEditing} />
+                <Input id="email" value={profile.email} disabled />
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={!isEditing} />
+                <Input id="phone" value={profile.phone || ""} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} disabled={!isEditing} />
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} disabled={!isEditing} />
+                <Input id="address" value={profile.address || ""} onChange={(e) => setProfile({ ...profile, address: e.target.value })} disabled={!isEditing} />
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="emergency">Emergency Contact</Label>
                 <Input
                   id="emergency"
-                  value={emergencyContact}
-                  onChange={(e) => setEmergencyContact(e.target.value)}
+                  value={profile.emergencyContact || ""}
+                  onChange={(e) => setProfile({ ...profile, emergencyContact: e.target.value })}
                   disabled={!isEditing}
                 />
               </div>
 
               {isEditing ? (
                 <div className="rounded-2xl bg-muted-bg/40 p-4 text-sm text-muted">
-                  Changes are UI-only placeholders. Save Changes will be wired to backend when available.
+                  Changes are saved to the backend database.
                 </div>
               ) : null}
             </div>
@@ -187,4 +215,3 @@ export default function PatientProfilePage() {
     </div>
   );
 }
-
