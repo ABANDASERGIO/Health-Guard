@@ -56,6 +56,21 @@ function signRefreshToken(payload: { sub: string; userId: string; role: Role }) 
   return jwt.sign(payload, secret, { expiresIn });
 }
 
+function getRefreshTokenExpiryMs(): number {
+  const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
+  const match = refreshExpiresIn.match(/^(\d+)([smhd])$/);
+  if (!match) return 7 * 24 * 60 * 60 * 1000;
+  const [, value, unit] = match;
+  const num = parseInt(value, 10);
+  switch (unit) {
+    case "s": return num * 1000;
+    case "m": return num * 60 * 1000;
+    case "h": return num * 60 * 60 * 1000;
+    case "d": return num * 24 * 60 * 60 * 1000;
+    default: return 7 * 24 * 60 * 60 * 1000;
+  }
+}
+
 function toRole(roleStr: string): Role {
   const normalized = roleStr.toUpperCase();
   if (normalized === "ADMIN" || normalized === "DOCTOR" || normalized === "PATIENT") return normalized as Role;
@@ -107,7 +122,6 @@ export async function registerService(input: RegisterInput) {
   const parsed = RegisterSchema.parse(input);
   const role = toRole(parsed.role);
 
-  // Enforce hospital for DOCTOR/ADMIN, allow none for PATIENT
   const needsHospital = role === "DOCTOR" || role === "ADMIN";
   const hospitalId = needsHospital ? await resolveHospitalId(parsed) : null;
 
@@ -122,8 +136,10 @@ export async function registerService(input: RegisterInput) {
 
   const passwordHash = await bcrypt.hash(parsed.password, 10);
 
+  let created: { id: string; email: string; name: string; avatar?: string | null };
+
   if (role === "PATIENT") {
-    const created = await prisma.patient.create({
+    created = await prisma.patient.create({
       data: {
         email: parsed.email,
         passwordHash,
@@ -132,14 +148,8 @@ export async function registerService(input: RegisterInput) {
       },
       select: { id: true, email: true, name: true, avatar: true },
     });
-
-    const accessToken = signAccessToken({ sub: created.id, role, userId: created.id });
-    const refreshToken = signRefreshToken({ sub: created.id, role, userId: created.id });
-    return { user: { ...created, role }, accessToken, refreshToken };
-  }
-
-  if (role === "DOCTOR") {
-    const created = await prisma.doctor.create({
+  } else if (role === "DOCTOR") {
+    created = await prisma.doctor.create({
       data: {
         email: parsed.email,
         passwordHash,
@@ -149,26 +159,32 @@ export async function registerService(input: RegisterInput) {
       },
       select: { id: true, email: true, name: true, avatar: true },
     });
-
-    const accessToken = signAccessToken({ sub: created.id, role, userId: created.id });
-    const refreshToken = signRefreshToken({ sub: created.id, role, userId: created.id });
-    return { user: { ...created, role }, accessToken, refreshToken };
+  } else {
+    created = await prisma.administrator.create({
+      data: {
+        email: parsed.email,
+        passwordHash,
+        name: parsed.name,
+        avatar: null,
+        hospitalId: hospitalId!,
+      },
+      select: { id: true, email: true, name: true, avatar: true },
+    });
   }
-
-  // ADMIN
-  const created = await prisma.administrator.create({
-    data: {
-      email: parsed.email,
-      passwordHash,
-      name: parsed.name,
-      avatar: null,
-      hospitalId: hospitalId!,
-    },
-    select: { id: true, email: true, name: true, avatar: true },
-  });
 
   const accessToken = signAccessToken({ sub: created.id, role, userId: created.id });
   const refreshToken = signRefreshToken({ sub: created.id, role, userId: created.id });
+
+  const expiresAt = new Date(Date.now() + (getRefreshTokenExpiryMs()));
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      userId: created.id,
+      userRole: role,
+      expiresAt,
+    },
+  });
+
   return { user: { ...created, role }, accessToken, refreshToken };
 }
 
@@ -307,7 +323,6 @@ export async function loginService(input: LoginInput) {
 
   const parsed = LoginSchema.parse(input);
 
-  // Try each table by email
   const [patient, doctor, admin] = await Promise.all([
     prisma.patient.findUnique({ where: { email: parsed.email } }),
     prisma.doctor.findUnique({ where: { email: parsed.email } }),
@@ -321,31 +336,47 @@ export async function loginService(input: LoginInput) {
   const ok = await bcrypt.compare(parsed.password, passwordHash);
   if (!ok) throw Object.assign(new Error("Invalid credentials"), { statusCode: 401 });
 
-  // Determine role and payload
+  let userId: string;
+  let role: Role;
+  let email: string;
+  let name: string | undefined;
+  let avatar: string | undefined | null;
+
   if (patient) {
-    const accessToken = signAccessToken({ sub: patient.id, role: "PATIENT", userId: patient.id });
-    const refreshToken = signRefreshToken({ sub: patient.id, role: "PATIENT", userId: patient.id });
-    return {
-      user: { id: patient.id, email: patient.email, name: patient.name, role: "PATIENT", avatar: patient.avatar },
-      accessToken,
-      refreshToken,
-    };
+    userId = patient.id;
+    role = "PATIENT";
+    email = patient.email;
+    name = patient.name;
+    avatar = patient.avatar;
+  } else if (doctor) {
+    userId = doctor.id;
+    role = "DOCTOR";
+    email = doctor.email;
+    name = doctor.name;
+    avatar = doctor.avatar;
+  } else {
+    userId = (admin as any).id;
+    role = "ADMIN";
+    email = (admin as any).email;
+    name = (admin as any).name;
+    avatar = (admin as any).avatar;
   }
 
-  if (doctor) {
-    const accessToken = signAccessToken({ sub: doctor.id, role: "DOCTOR", userId: doctor.id });
-    const refreshToken = signRefreshToken({ sub: doctor.id, role: "DOCTOR", userId: doctor.id });
-    return {
-      user: { id: doctor.id, email: doctor.email, name: doctor.name, role: "DOCTOR", avatar: doctor.avatar },
-      accessToken,
-      refreshToken,
-    };
-  }
+  const accessToken = signAccessToken({ sub: userId, role, userId });
+  const refreshToken = signRefreshToken({ sub: userId, role, userId });
 
-  const accessToken = signAccessToken({ sub: (admin as any).id, role: "ADMIN", userId: (admin as any).id });
-  const refreshToken = signRefreshToken({ sub: (admin as any).id, role: "ADMIN", userId: (admin as any).id });
+  const expiresAt = new Date(Date.now() + (getRefreshTokenExpiryMs()));
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      userId,
+      userRole: role,
+      expiresAt,
+    },
+  });
+
   return {
-    user: { id: (admin as any).id, email: (admin as any).email, name: (admin as any).name, role: "ADMIN", avatar: (admin as any).avatar },
+    user: { id: userId, email, name, role, avatar },
     accessToken,
     refreshToken,
   };

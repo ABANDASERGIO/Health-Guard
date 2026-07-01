@@ -39,10 +39,10 @@ const labeled: Row[] = seed.map((p) => ({
 type InviteForm = z.infer<typeof inviteDoctorSchema>;
 
 export default function AdminPersonnelPage() {
-  const hospitals = useHospitalsStore((s) => s.hospitals);
-  const addNotification = useNotificationsStore((s) => s.addNotification);
+   const hospitals = useHospitalsStore((s) => s.hospitals);
+   const add = useNotificationsStore((s) => s.add);
 
-  const [rows, setRows] = useState<Row[]>(labeled);
+   const [rows, setRows] = useState<Row[]>(labeled);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [hospitalSearch, setHospitalSearch] = useState("");
 
@@ -87,31 +87,34 @@ export default function AdminPersonnelPage() {
   };
 
   const onInvite = async (values: InviteForm) => {
-    await new Promise((r) => setTimeout(r, 400));
-    const hospital = hospitals.find((h) => h.id === values.hospitalId);
-    const row: Row = {
-      id: `inv-${crypto.randomUUID().slice(0, 10)}`,
-      name: values.fullName.trim(),
-      email: values.email.trim(),
-      phone: values.phone.trim(),
-      role: "doctor",
-      hospital: hospital?.name ?? "Unknown facility",
-      status: "pending",
-      roleLabel: "Physician",
-    };
-    setRows((prev) => [row, ...prev]);
-    addNotification({
-      id: `adm-${crypto.randomUUID().slice(0, 8)}`,
-      title: "Doctor invitation queued",
-      description: `${row.name} invited to ${row.hospital} · license ${values.hospitalLicenseCode}`,
-      type: "system",
-      read: false,
-      createdAt: new Date().toISOString(),
-      audience: "admin",
-    });
-    reset();
-    setHospitalSearch("");
-    setInviteOpen(false);
+    try {
+      const { adminApi } = await import("@/lib/api-client");
+      await adminApi.invitePersonnel(values as any);
+      const hospital = hospitals.find((h) => h.id === values.hospitalId);
+      const row: Row = {
+        id: `inv-${crypto.randomUUID().slice(0, 10)}`,
+        name: values.fullName.trim(),
+        email: values.email.trim(),
+        phone: values.phone.trim(),
+        role: "doctor",
+        hospital: hospital?.name ?? "Unknown facility",
+        status: "pending",
+        roleLabel: "Physician",
+      };
+      setRows((prev) => [row, ...prev]);
+      add({
+        title: "Doctor invitation queued",
+        description: `${row.name} invited to ${row.hospital} · license ${values.hospitalLicenseCode}`,
+        type: "system",
+        read: false,
+        audience: "admin",
+      });
+      reset();
+      setHospitalSearch("");
+      setInviteOpen(false);
+    } catch (err) {
+      console.error("Invite failed:", err);
+    }
   };
 
   return (

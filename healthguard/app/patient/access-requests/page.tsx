@@ -1,33 +1,62 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { KeyRound, ShieldCheck, ShieldOff } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { ShieldCheck, ShieldOff } from "lucide-react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import type { AccessRequest } from "@/types";
-import { patientAccessRequests as initialRequests } from "@/mock-data/patient";
+
+// backend may return doctorHospital depending on controller implementation
+type AccessRequestWithHospital = AccessRequest & { doctorHospital?: string };
 
 export default function PatientAccessRequestsPage() {
-  const [requests, setRequests] = useState<AccessRequest[]>(initialRequests);
+   const [requests, setRequests] = useState<AccessRequestWithHospital[]>([]);
 
-  const pending = useMemo(() => requests.filter((r) => r.status === "pending"), [requests]);
+   useEffect(() => {
+    (async () => {
+      const { patientApi } = await import("@/lib/api-client");
+      const res = await patientApi.getAccessRequests();
+      if (res.success && Array.isArray(res.data)) {
+        setRequests(res.data as AccessRequestWithHospital[]);
+      }
+    })();
+  }, []);
 
-  const approve = (id: string) => {
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    setRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: "approved" as const, otp } : r))
-    );
+   const pending = useMemo(() => requests.filter((r) => r.status === "pending"), [requests]);
+
+  const approve = async (id: string) => {
+    try {
+      const { patientApi } = await import("@/lib/api-client");
+      await patientApi.approveAccessRequest(id);
+      setRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, status: "approved" as const, otp: "" } : r))
+      );
+    } catch (err) {
+      console.error("Approve failed:", err);
+    }
   };
 
-  const reject = (id: string) => {
-    setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: "rejected" as const } : r)));
+  const reject = async (id: string) => {
+    try {
+      const { patientApi } = await import("@/lib/api-client");
+      await patientApi.rejectAccessRequest(id);
+      setRequests((prev) => prev.map((r) => (r.id === id ? { ...r, status: "rejected" as const } : r)));
+    } catch (err) {
+      console.error("Reject failed:", err);
+    }
   };
 
-  const revoke = (id: string) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id));
+  const revoke = async (id: string) => {
+    try {
+      const { patientApi } = await import("@/lib/api-client");
+      await patientApi.revokeAccessRequest(id);
+      setRequests((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error("Revoke failed:", err);
+    }
   };
 
   return (
@@ -87,8 +116,10 @@ export default function PatientAccessRequestsPage() {
                   </Badge>
                 </div>
                 <CardDescription className="mt-2 max-w-3xl">{req.reason}</CardDescription>
+                {/* Avoid leaking internal ids; show only human-readable info */}
                 <p className="mt-3 text-xs text-muted">
-                  Request ID {req.id} · Doctor ID {req.doctorId}
+                  {req.doctorHospital ? `${req.doctorHospital} · ` : ""}
+                  Priority {req.priority.toUpperCase()}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -103,9 +134,8 @@ export default function PatientAccessRequestsPage() {
                   </>
                 ) : req.status === "approved" ? (
                   <>
-                    <div className="flex items-center gap-2 rounded-xl border border-border bg-muted-bg px-3 py-2 text-sm">
-                      <KeyRound className="size-4 text-primary" />
-                      <span className="font-mono font-semibold">{req.otp ?? "Generating…"}</span>
+                    <div className="rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm text-foreground">
+                      Temporary access granted
                     </div>
                     <Button type="button" variant="danger" onClick={() => revoke(req.id)}>
                       Revoke access

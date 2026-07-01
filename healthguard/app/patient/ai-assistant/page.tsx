@@ -1,22 +1,27 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Lock,
-  Search,
-  Send,
-  Shield,
-  Sparkles,
-  Stethoscope,
-} from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { Lock, Search, Send, Shield, Sparkles, Stethoscope } from "lucide-react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
-import { aiInsights, suggestedAiPrompts } from "@/mock-data/patient";
+
+const suggestedAiPrompts = [
+  "Explain my latest blood pressure trend in plain language.",
+  "What questions should I ask my cardiologist?",
+  "Summarize lifestyle changes that support heart health.",
+  "Are my logged symptoms consistent with dehydration?",
+];
+
+const aiInsights = [
+  { id: "i1", title: "Blood pressure pattern", severity: "warning" as const, body: "Readings suggest elevated systolic trend — correlate with sodium intake and sleep." },
+  { id: "i2", title: "Symptom correlation", severity: "info" as const, body: "Reported fatigue aligns with recent medication change timing." },
+  { id: "i3", title: "Temperature stability", severity: "success" as const, body: "No fever pattern detected across logged readings." },
+];
 
 type Msg = { id: string; role: "user" | "assistant"; content: string; ts: number };
 

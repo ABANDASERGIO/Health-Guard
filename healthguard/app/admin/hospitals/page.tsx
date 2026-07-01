@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { Badge } from "@/components/ui/badge";
@@ -11,8 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
-import type { HospitalRecord } from "@/stores/hospitals-store";
-import { useHospitalsStore } from "@/stores/hospitals-store";
+import { useHospitalsStore, type HospitalRecord } from "@/stores/hospitals-store";
 
 const emptyForm = (): Omit<HospitalRecord, "id"> & { id?: string } => ({
   name: "",
@@ -29,6 +28,11 @@ export default function AdminHospitalsPage() {
   const hospitals = useHospitalsStore((s) => s.hospitals);
   const upsertHospital = useHospitalsStore((s) => s.upsertHospital);
   const removeHospital = useHospitalsStore((s) => s.removeHospital);
+  const fetchHospitals = useHospitalsStore((s) => s.fetchHospitals);
+
+  useEffect(() => {
+    fetchHospitals();
+  }, [fetchHospitals]);
 
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

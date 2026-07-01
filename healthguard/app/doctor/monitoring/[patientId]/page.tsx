@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { ClipboardPlus, Pill } from "lucide-react";
+import { useEffect, useState } from "react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { VitalsTrendChart } from "@/components/charts/vitals-trend-chart";
 import { AnalyticsBarChart } from "@/components/charts/analytics-bar";
@@ -12,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
-import { monitoringVitalsSeries } from "@/mock-data/doctor";
 
 const adherence = [
   { name: "Week 1", value: 88 },
@@ -21,9 +21,34 @@ const adherence = [
   { name: "Week 4", value: 90 },
 ];
 
+type VitalSeries = {
+  date: string;
+  systolic: number;
+  diastolic: number;
+  hr?: number;
+};
+
 export default function DoctorMonitoringPage() {
   const params = useParams<{ patientId: string }>();
   const patientId = params.patientId;
+  const [vitals, setVitals] = useState<VitalSeries[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      if (!patientId) return;
+      const { doctorApi } = await import("@/lib/api-client");
+      const res = await doctorApi.getMonitoringSessions(patientId);
+      if (res.success && Array.isArray(res.data)) {
+        const mapped = (res.data as any[]).map((v) => ({
+          date: v.date,
+          systolic: v.systolic ?? 0,
+          diastolic: v.diastolic ?? 0,
+          hr: v.heartRate ?? 0,
+        }));
+        setVitals(mapped);
+      }
+    })();
+  }, [patientId]);
 
   return (
     <div className="space-y-8">
@@ -41,7 +66,11 @@ export default function DoctorMonitoringPage() {
             <CardDescription>Dual charts highlight physiological trend vs adherence proxies.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-8">
-            <VitalsTrendChart data={monitoringVitalsSeries} />
+            {vitals.length > 0 ? (
+              <VitalsTrendChart data={vitals} />
+            ) : (
+              <p className="text-sm text-muted">No vitals recorded for this patient.</p>
+            )}
             <AnalyticsBarChart title="Therapy adherence index" data={adherence} dataKey="value" />
           </CardContent>
         </Card>

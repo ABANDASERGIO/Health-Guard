@@ -16,11 +16,20 @@ import { Button } from "@/components/ui/button";
 
 export function NotificationsDropdown() {
   const user = useAuthStore((s) => s.user);
+  const fetch = useNotificationsStore((s) => s.fetch);
   const items = useNotificationsStore((s) => s.items);
   const markRead = useNotificationsStore((s) => s.markRead);
 
   const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!loaded) {
+      fetch();
+      setLoaded(true);
+    }
+  }, [fetch, loaded, user?.role]);
 
   const role = user?.role;
   const scoped = selectNotificationsForRole(role, items)

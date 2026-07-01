@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { AlertTriangle, TrendingUp } from "lucide-react";
 import {
   Bar,
@@ -16,17 +17,45 @@ import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
-import { intelligentAlerts } from "@/mock-data/doctor";
-
-const severityData = [
-  { label: "Critical", count: 4 },
-  { label: "Warning", count: 11 },
-  { label: "Info", count: 26 },
-];
 
 const ALERT_CHART_H = 280;
 
+type AlertItem = {
+  id: string;
+  level: "critical" | "warning" | "info";
+  patient: string;
+  message: string;
+};
+
 export default function DoctorAlertsPage() {
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [severityData, setSeverityData] = useState<Array<{ label: string; count: number }>>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { doctorApi } = await import("@/lib/api-client");
+      const res = await doctorApi.getAccessRequests(1, 50);
+      if (res.success && Array.isArray(res.data)) {
+        const mapped = (res.data as any[]).map((a) => ({
+          id: a.id,
+          level: (a.priority === "CRITICAL" || a.priority === "HIGH" ? "critical" : a.priority === "NORMAL" ? "warning" : "info") as "critical" | "warning" | "info",
+          patient: `${a.patient?.name || "Unknown"} · ${a.patient?.id?.slice(0, 8) || "Unknown"}`,
+          message: a.reason,
+        }));
+        setAlerts(mapped);
+        const counts = mapped.reduce((acc, a) => {
+          acc[a.level] = (acc[a.level] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        setSeverityData([
+          { label: "Critical", count: counts.critical || 0 },
+          { label: "Warning", count: counts.warning || 0 },
+          { label: "Info", count: counts.info || 0 },
+        ]);
+      }
+    })();
+  }, []);
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -81,22 +110,26 @@ export default function DoctorAlertsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {intelligentAlerts.map((a) => (
-          <Card
-            key={a.id}
-            className={
-              a.level === "critical"
-                ? "border-red-500/40 bg-red-500/5"
-                : "border-amber-500/35 bg-amber-500/5"
-            }
-          >
-            <CardHeader>
-              <Badge variant={a.level === "critical" ? "danger" : "warning"}>{a.level}</Badge>
-              <CardTitle className="text-base">{a.patient}</CardTitle>
-              <CardDescription>{a.message}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
+        {alerts.length === 0 ? (
+          <p className="text-sm text-muted md:col-span-2">No alerts.</p>
+        ) : (
+          alerts.map((a) => (
+            <Card
+              key={a.id}
+              className={
+                a.level === "critical"
+                  ? "border-red-500/40 bg-red-500/5"
+                  : "border-amber-500/35 bg-amber-500/5"
+              }
+            >
+              <CardHeader>
+                <Badge variant={a.level === "critical" ? "danger" : "warning"}>{a.level}</Badge>
+                <CardTitle className="text-base">{a.patient}</CardTitle>
+                <CardDescription>{a.message}</CardDescription>
+              </CardHeader>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );

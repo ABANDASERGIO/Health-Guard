@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { format } from "date-fns";
+import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, Shield } from "lucide-react";
@@ -13,28 +14,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
-import { vitalsSchema } from "@/validations/auth";
-import type { z } from "zod";
-import { vitalsHistory } from "@/mock-data/patient";
+import type { VitalReading } from "@/types";
 
-type FormValues = z.infer<typeof vitalsSchema>;
-
-const chartSeries = [
-  { date: "May 03", systolic: 132, diastolic: 86, hr: 76 },
-  { date: "May 07", systolic: 128, diastolic: 82, hr: 72 },
-  { date: "May 10", systolic: 130, diastolic: 84, hr: 74 },
-];
+type VitalsInput = {
+  temperature?: string;
+  systolic?: string;
+  diastolic?: string;
+  heartRate?: string;
+  weight?: string;
+  symptoms?: string;
+};
 
 export default function PatientMonitoringPage() {
   const [saved, setSaved] = useState<string | null>(null);
+  const [vitals, setVitals] = useState<VitalReading[]>([]);
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(vitalsSchema),
+  } = useForm<VitalsInput>({
     defaultValues: {
       temperature: "",
       systolic: "",
@@ -45,19 +45,55 @@ export default function PatientMonitoringPage() {
     },
   });
 
+  useEffect(() => {
+    (async () => {
+      const { patientApi } = await import("@/lib/api-client");
+      const res = await patientApi.getVitals(1, 10);
+      if (res.success && Array.isArray(res.data)) {
+        setVitals(res.data as VitalReading[]);
+      }
+    })();
+  }, []);
+
   const risk = useMemo(() => {
-    const last = vitalsHistory[0];
+    const last = vitals[0];
     if (!last?.systolic) return "low";
     if (last.systolic >= 135) return "elevated";
     return "stable";
-  }, []);
+  }, [vitals]);
 
-  const onSubmit = async (_data: FormValues) => {
-    await new Promise((r) => setTimeout(r, 400));
-    setSaved("Vitals encrypted and queued for clinician review.");
-    reset();
-    setTimeout(() => setSaved(null), 4000);
+  const onSubmit = async (data: VitalsInput) => {
+    setSaved(null);
+    try {
+      const { patientApi } = await import("@/lib/api-client");
+      await patientApi.recordVital(data);
+      setSaved("Vitals encrypted and queued for clinician review.");
+      reset();
+      setVitals((prev) => [
+        {
+          ...data,
+          id: `local-${Date.now()}`,
+          date: new Date().toISOString(),
+          temperature: Number(data.temperature),
+          systolic: Number(data.systolic),
+          diastolic: Number(data.diastolic),
+          heartRate: Number(data.heartRate),
+          weight: Number(data.weight),
+        } as VitalReading,
+        ...prev,
+      ]);
+      setTimeout(() => setSaved(null), 4000);
+    } catch (err) {
+      setSaved("Failed to save vitals.");
+    }
   };
+
+  const chartSeries = vitals.map((v) => ({
+    date: format(new Date(v.date), "MMM dd"),
+    systolic: v.systolic ?? 0,
+    diastolic: v.diastolic ?? 0,
+    hr: v.heartRate ?? 0,
+  }));
 
   return (
     <div className="space-y-8">
@@ -134,10 +170,6 @@ export default function PatientMonitoringPage() {
                 <Textarea id="symptoms" placeholder="Optional notes — encrypted at rest in production integrations." {...register("symptoms")} />
               </div>
 
-              {errors.symptoms?.message ? (
-                <p className="text-sm text-danger">{errors.symptoms.message}</p>
-              ) : null}
-
               <Button type="submit" loading={isSubmitting} className="w-full">
                 Submit encrypted vitals
               </Button>
@@ -146,7 +178,11 @@ export default function PatientMonitoringPage() {
           </CardContent>
         </Card>
 
-        <VitalsTrendChart data={chartSeries} />
+        {vitals.length > 0 ? (
+          <VitalsTrendChart data={chartSeries} />
+        ) : (
+          <p className="text-sm text-muted">No vitals recorded yet.</p>
+        )}
       </div>
     </div>
   );
