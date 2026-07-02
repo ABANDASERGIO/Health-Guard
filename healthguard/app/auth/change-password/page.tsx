@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+
 import { AuthShell } from "@/components/layout/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,9 +27,7 @@ const changePasswordFormSchema = z
 
 type FormValues = z.infer<typeof changePasswordFormSchema>;
 
-// NOTE: legacy OTP-based recovery page kept for reference.
-// New authenticated Change Password is implemented at /auth/change-password.
-export default function ResetPasswordPage_OLD_OTP_FLOW() { /* legacy, not used */
+export default function ChangePasswordPage() {
   const router = useRouter();
   const [showPw, setShowPw] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -38,57 +37,46 @@ export default function ResetPasswordPage_OLD_OTP_FLOW() { /* legacy, not used *
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(resetPasswordFormSchema),
-    defaultValues: { otp: "", password: "", confirmPassword: "" },
+    resolver: zodResolver(changePasswordFormSchema),
+    defaultValues: { currentPassword: "", newPassword: "", confirmNewPassword: "" },
   });
 
   const onSubmit = async (values: FormValues) => {
     setServerError(null);
 
-    const email = sessionStorage.getItem("recovery_email");
-    if (!email) {
-      router.push("/auth/forgot-password");
-      return;
-    }
-
     try {
-      await authApi.resetPassword(email, values.otp, values.password);
-      sessionStorage.removeItem("recovery_email");
-      router.push("/auth/login?reset=success");
+      await authApi.changePassword(values.currentPassword, values.newPassword, values.confirmNewPassword);
+      router.push("/auth/login?changed=success");
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Password reset failed. Please try again.");
+      setServerError(err instanceof Error ? err.message : "Password change failed. Please try again.");
     }
   };
 
   return (
     <AuthShell
-      title="Set a new password"
-      description="Enter the code sent to your verified email, then choose a strong passphrase that you have not used previously with HealthGuard."
+      title="Change your password"
+      description="Enter your current password and choose a new one."
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="space-y-2">
-          <Label htmlFor="otp">Verification code</Label>
+          <Label htmlFor="currentPassword">Current password</Label>
           <Input
-            id="otp"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            placeholder="••••••"
-            maxLength={6}
-            className="tracking-[0.5em] font-mono text-lg"
-            error={errors.otp?.message}
-            {...register("otp")}
+            id="currentPassword"
+            type={showPw ? "text" : "password"}
+            error={errors.currentPassword?.message}
+            {...register("currentPassword")}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">New password</Label>
+          <Label htmlFor="newPassword">New password</Label>
           <div className="relative">
             <Input
-              id="password"
+              id="newPassword"
               type={showPw ? "text" : "password"}
               className="pr-12"
-              error={errors.password?.message}
-              {...register("password")}
+              error={errors.newPassword?.message}
+              {...register("newPassword")}
             />
             <button
               type="button"
@@ -102,12 +90,12 @@ export default function ResetPasswordPage_OLD_OTP_FLOW() { /* legacy, not used *
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm password</Label>
+          <Label htmlFor="confirmNewPassword">Confirm new password</Label>
           <Input
-            id="confirmPassword"
-            type="password"
-            error={errors.confirmPassword?.message}
-            {...register("confirmPassword")}
+            id="confirmNewPassword"
+            type={showPw ? "text" : "password"}
+            error={errors.confirmNewPassword?.message}
+            {...register("confirmNewPassword")}
           />
         </div>
 
@@ -118,7 +106,7 @@ export default function ResetPasswordPage_OLD_OTP_FLOW() { /* legacy, not used *
         ) : null}
 
         <Button type="submit" className="w-full" size="lg" loading={isSubmitting}>
-          Update credentials
+          Change password
         </Button>
 
         <p className="text-center text-sm text-muted">
@@ -131,3 +119,4 @@ export default function ResetPasswordPage_OLD_OTP_FLOW() { /* legacy, not used *
     </AuthShell>
   );
 }
+
