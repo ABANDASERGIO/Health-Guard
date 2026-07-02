@@ -51,9 +51,9 @@ export function AuthShell({
           <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
             <p className="text-sm font-medium text-foreground">Compliance-ready UX patterns</p>
             <ul className="mt-4 space-y-3 text-sm text-muted">
-              <li>JWT session indicators and audited access flows</li>
-              <li>Role-separated workspaces with PHI-safe layouts</li>
-              <li>Encrypted presentation for sensitive medical artifacts</li>
+              <li>Clear session status and account safety cues</li>
+              <li>Role-specific workspaces designed for care teams</li>
+              <li>Protected presentation for sensitive health details</li>
             </ul>
           </div>
         </motion.div>

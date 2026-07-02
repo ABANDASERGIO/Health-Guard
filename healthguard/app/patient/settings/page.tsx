@@ -4,6 +4,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useNotificationsSettingsStore } from "@/stores/notifications-settings-store";
+
+
+function NotificationToggle() {
+  const enabled = useNotificationsSettingsStore((s) => s.enabled);
+  const setEnabled = useNotificationsSettingsStore((s) => s.setEnabled);
+
+  return (
+    <div className="space-y-3">
+      <Button
+        type="button"
+        variant="secondary"
+        className="w-full"
+        onClick={() => setEnabled(!enabled)}
+      >
+        Notification Toggle (On/Off): {enabled ? "On" : "Off"}
+      </Button>
+      <div className="text-xs text-muted">Controls whether the Notifications page fetches/shows notifications.</div>
+    </div>
+  );
+}
 
 export default function PatientSettingsPage() {
   const router = useRouter();
@@ -27,7 +48,7 @@ export default function PatientSettingsPage() {
           <CardContent className="p-6">
             <h2 className="text-lg font-semibold">Account</h2>
             <div className="mt-4 space-y-3">
-              <Button type="button" variant="secondary" className="w-full" disabled>
+              <Button type="button" variant="secondary" className="w-full" onClick={() => router.push("/auth/change-password")}>
                 Change Password
               </Button>
               <Button type="button" variant="secondary" className="w-full" onClick={handleLogout}>
@@ -45,9 +66,7 @@ export default function PatientSettingsPage() {
           <CardContent className="p-6">
             <h2 className="text-lg font-semibold">Preferences</h2>
             <div className="mt-4 space-y-3">
-              <Button type="button" variant="secondary" className="w-full" disabled>
-                Notification Toggle (On/Off)
-              </Button>
+              <NotificationToggle />
               <Button type="button" variant="secondary" className="w-full" disabled>
                 Dark Mode Toggle
               </Button>

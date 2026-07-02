@@ -70,7 +70,7 @@ export default function DoctorAiAssistantPage() {
     <div className="space-y-6 md:space-y-8">
       <PageHeader
         title="AI Clinical Assistant"
-        description="Doctor-exclusive workspace for documentation support and cohort insights. Separate from patient AI chats — PHI access still requires approved chart permissions."
+        description="Doctor-exclusive workspace for documentation support and cohort insights. Separate from patient AI chats — approved patient access is required."
         actions={
           <Badge variant="success" className="gap-1">
             <Lock className="size-3" /> Doctor-only channel
@@ -82,7 +82,7 @@ export default function DoctorAiAssistantPage() {
         <Card className="hidden xl:block">
           <CardHeader>
             <CardTitle className="text-base">Conversations</CardTitle>
-            <CardDescription>Search encrypted clinical threads.</CardDescription>
+            <CardDescription>Search clinical threads.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="relative">
@@ -126,7 +126,7 @@ export default function DoctorAiAssistantPage() {
                 </div>
               </div>
               <Badge variant="primary" className="shrink-0 gap-1">
-                <Shield className="size-3" /> Encrypted session UI
+                <Shield className="size-3" /> Secure session
               </Badge>
             </CardHeader>
             <CardContent className="space-y-0 p-0">

@@ -39,7 +39,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       <PageHeader
         title="Enterprise overview"
-        description="Aggregate utilization, workforce footprint, and security telemetry across the SPMS estate."
+        description="Aggregate utilization, workforce footprint, and security telemetry across the HealthGuard network."
         actions={
           <LinkButton href="/admin/logs" variant="secondary">
             Open system logs
@@ -79,7 +79,7 @@ export default function AdminDashboardPage() {
             <CardDescription>Unauthorized attempts held at 0.02% after MFA enforcement.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted">
-            <p>Centralized audit streaming replays to SOC dashboards with immutable hashes (demo).</p>
+            <p>Centralized audit streams support review dashboards with traceable history (demo).</p>
             <Badge variant="primary">HIPAA-aligned control mapping</Badge>
           </CardContent>
         </Card>
@@ -91,7 +91,7 @@ export default function AdminDashboardPage() {
           <CardContent className="flex flex-wrap gap-2">
             <Badge variant="success">Encryption coverage 100%</Badge>
             <Badge variant="outline">RBAC drift check OK</Badge>
-            <Badge variant="warning">3 hospitals pending hardware tokens</Badge>
+            <Badge variant="warning">3 hospitals pending extra authentication</Badge>
           </CardContent>
         </Card>
       </div>

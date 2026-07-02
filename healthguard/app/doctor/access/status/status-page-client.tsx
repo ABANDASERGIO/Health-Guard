@@ -20,7 +20,7 @@ export function StatusPageClient() {
     <div className="space-y-8">
       <PageHeader
         title="Access approval status"
-        description="Track OTP workflows from submission through temporary privilege activation."
+        description="Track request progress from submission through temporary privilege activation."
       />
 
       <EncryptionBanner variant="compact" />

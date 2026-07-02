@@ -63,7 +63,7 @@ export default function PatientAccessRequestsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Access requests"
-        description="Approve clinician access to encrypted PHI, rotate OTP codes, and revoke temporary privileges instantly."
+        description="Approve clinician access to sensitive health records, rotate access codes, and revoke temporary privileges instantly."
       />
 
       <EncryptionBanner variant="compact" />
@@ -72,11 +72,11 @@ export default function PatientAccessRequestsPage() {
         <CardHeader>
           <CardTitle>Secure access workflow</CardTitle>
           <CardDescription>
-            Doctors initiate requests · You approve · OTP unlocks time-bound sessions · All actions audit-logged.
+            Doctors initiate requests · You approve · Secure code unlocks time-bound sessions · All actions are tracked.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-4">
-          {["Request", "Notify patient", "OTP verify", "Temporary access"].map((step, idx) => (
+          {['Request', 'Notify patient', 'Code verify', 'Temporary access'].map((step, idx) => (
             <div key={step} className="rounded-xl border border-border bg-muted-bg/40 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted">Step {idx + 1}</p>
               <p className="mt-2 font-semibold">{step}</p>
@@ -142,7 +142,7 @@ export default function PatientAccessRequestsPage() {
                     </Button>
                   </>
                 ) : (
-                  <Badge variant="danger">Rejected · no PHI shared</Badge>
+                  <Badge variant="danger">Rejected · no data shared</Badge>
                 )}
               </div>
             </CardHeader>

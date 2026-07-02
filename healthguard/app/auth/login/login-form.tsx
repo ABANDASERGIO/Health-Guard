@@ -61,16 +61,10 @@ export function LoginForm() {
   return (
     <AuthShell
       title="Authenticate securely"
-      description="Multi-role healthcare workspace with segmented dashboards, PHI-safe layouts, and audited session handling suitable for capstone demonstrations."
+      description="Multi-role healthcare workspace with segmented dashboards, safe layouts, and secure sign-in suitable for production demos."
     >
-      <div className="mb-8 flex items-center gap-3 rounded-2xl border border-border bg-muted-bg/60 px-4 py-3">
-        <KeyRound className="size-5 text-primary" aria-hidden />
-        <div>
-          <p className="text-sm font-semibold text-foreground">Real API Integration</p>
-          <p className="text-xs text-muted">
-            Connecting to backend API at {process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"} for authentication.
-          </p>
-        </div>
+      <div className="mb-8 rounded-2xl border border-border bg-muted-bg/60 px-4 py-4 text-sm text-muted">
+        Use your workplace credentials to sign in and continue to the workspace for your role.
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -143,7 +137,7 @@ export function LoginForm() {
         </Button>
 
         <p className="text-center text-sm text-muted">
-          New to SPMS?{" "}
+          New to HealthGuard?{" "}
           <Link href="/auth/register" className="font-semibold text-accent hover:underline">
             Register an account
           </Link>

@@ -123,6 +123,12 @@ export const authApi = {
       body: JSON.stringify({ email, otp, password, confirmPassword }),
     }),
 
+  changePassword: async (currentPassword: string, newPassword: string, confirmNewPassword: string) =>
+    request<{ changed: true }>("/api/auth/change-password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword, confirmNewPassword }),
+    }),
+
   verifyOtp: async (email: string, otp: string, purpose = "EMAIL_VERIFICATION") =>
     request("/api/auth/verify-otp", {
       method: "POST",

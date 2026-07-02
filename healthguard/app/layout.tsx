@@ -12,11 +12,11 @@ const fontFamily = `
 
 export const metadata: Metadata = {
   title: {
-    default: "Secure Patient Monitoring System",
-    template: "%s · SPMS",
+    default: "HealthGuard",
+    template: "%s · HealthGuard",
   },
   description:
-    "Hospital-grade secure patient monitoring, coordinated care workflows, and encrypted healthcare UX for patients and care teams.",
+    "Hospital-grade secure patient monitoring, coordinated care workflows, and protected healthcare experiences for patients and care teams.",
 };
 
 export default function RootLayout({

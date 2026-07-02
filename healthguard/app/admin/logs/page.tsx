@@ -30,7 +30,7 @@ export default function AdminLogsPage() {
     <div className="space-y-8">
       <PageHeader
         title="System logs"
-        description="Immutable-style streaming interface with export placeholders for SOC integrations."
+        description="Audit timeline with export-ready activity insights."
         actions={
           <Button type="button" variant="secondary" className="gap-2">
             <Download className="size-4" /> Export CSV

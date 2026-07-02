@@ -100,7 +100,7 @@ export default function PatientRecordsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Medical records"
-        description="Structured PHI with encrypted artifact labeling, longitudinal vitals, and clinician commentary gated behind approved access."
+        description="Structured medical records with protective labels, longitudinal vitals, and clinician commentary gated behind approved access."
       />
       <EncryptionBanner variant="compact" />
 
@@ -257,7 +257,7 @@ export default function PatientRecordsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Uploaded documents</CardTitle>
-            <CardDescription>Encrypted artifacts at rest.</CardDescription>
+            <CardDescription>Protected documents at rest.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {documents.length === 0 ? (
@@ -276,7 +276,7 @@ export default function PatientRecordsPage() {
                   </div>
                   {doc.protected ? (
                     <Badge variant="success" className="gap-1">
-                      <Lock className="size-3" /> PHI
+                      <Lock className="size-3" /> Protected record
                     </Badge>
                   ) : null}
                 </div>
@@ -296,7 +296,7 @@ export default function PatientRecordsPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <CardTitle>Doctor notes</CardTitle>
-                <CardDescription>Expandable encrypted commentary.</CardDescription>
+                <CardDescription>Expandable clinician notes.</CardDescription>
               </div>
               <ChevronDown
                 className={`size-5 shrink-0 transition-transform ${expanded === "notes" ? "rotate-180" : ""}`}
@@ -316,7 +316,7 @@ export default function PatientRecordsPage() {
                     <Badge variant="outline">{n.date}</Badge>
                     {n.encrypted ? (
                       <Badge variant="success" className="gap-1">
-                        <Lock className="size-3" /> Encrypted note
+                        <Lock className="size-3" /> Protected note
                       </Badge>
                     ) : null}
                   </div>

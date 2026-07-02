@@ -30,7 +30,7 @@ const starter: Msg[] = [
     id: "m1",
     role: "assistant",
     content:
-      "Hello — I am your Secure Patient Monitoring assistant. I can explain trends, summarize uploaded documents, and coach wellness questions. This channel is presented as encrypted for demonstration purposes.",
+      "Hello — I am your Secure Patient Monitoring assistant. I can explain trends, summarize uploaded documents, and coach wellness questions. This channel is presented as protected for demonstration purposes.",
     ts: Date.now(),
   },
 ];
@@ -69,7 +69,7 @@ export default function PatientAiAssistantPage() {
     const responses = [
       "Based on your logged vitals, systolic readings show a mild upward drift — consider discussing sodium intake and sleep consistency with your clinician.",
       "Symptoms like fatigue can have many causes. Correlate with medication changes and hydration; escalate if acute chest pain or neurologic deficits occur.",
-      "Your encrypted documents indicate stable renal markers — continue prescribed therapy unless directed otherwise.",
+      "Your uploaded documents indicate stable renal markers — continue prescribed therapy unless directed otherwise.",
     ];
     const assistantMsg: Msg = {
       id: crypto.randomUUID(),
@@ -86,7 +86,7 @@ export default function PatientAiAssistantPage() {
     <div className="space-y-8">
       <PageHeader
         title="AI Health Assistant"
-        description="Patient-exclusive conversational workspace with simulated encryption cues. Doctors and admins cannot access these transcripts."
+        description="Patient-exclusive conversational workspace with privacy cues. Doctors and admins cannot access these transcripts."
         actions={
           <Badge variant="success" className="gap-1">
             <Lock className="size-3" /> Patient-only channel
@@ -98,7 +98,7 @@ export default function PatientAiAssistantPage() {
         <Card className="hidden xl:block">
           <CardHeader>
             <CardTitle className="text-base">Conversations</CardTitle>
-            <CardDescription>Search encrypted chat history.</CardDescription>
+            <CardDescription>Search secure chat history.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="relative">
@@ -140,7 +140,7 @@ export default function PatientAiAssistantPage() {
                 </div>
               </div>
               <Badge variant="primary" className="gap-1">
-                <Shield className="size-3" /> Encrypted session UI
+                <Shield className="size-3" /> Protected session UI
               </Badge>
             </CardHeader>
             <CardContent className="space-y-0 p-0">
