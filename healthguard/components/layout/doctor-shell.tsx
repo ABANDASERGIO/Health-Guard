@@ -20,6 +20,8 @@ const navItems: DashboardNavItem[] = [
   { href: "/doctor/alerts", label: "Doctor alerts", icon: AlertTriangle },
   { href: "/doctor/monitoring/pat-001", label: "Patient monitoring", icon: Stethoscope },
   { href: "/doctor/ai-assistant", label: "AI Clinical Assistant", icon: Sparkles },
+  { href: "/doctor/profile", label: "Profile", icon: Users },
+  { href: "/doctor/settings", label: "Settings", icon: KeyRound },
 ];
 
 export function DoctorShell({ children }: { children: ReactNode }) {
@@ -29,3 +31,4 @@ export function DoctorShell({ children }: { children: ReactNode }) {
     </DashboardShell>
   );
 }
+

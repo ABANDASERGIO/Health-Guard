@@ -11,6 +11,11 @@ const RequestAccessSchema = z.object({
   priority: z.string().optional().default("NORMAL"),
 });
 
+const UpdateDoctorProfileSchema = z.object({
+  name: z.string().min(1).optional(),
+  avatar: z.string().optional(),
+});
+
 export async function getProfileController(req: AuthenticatedRequest, res: Response) {
   const doctorId = req.user?.id;
   if (!doctorId) {
@@ -19,7 +24,15 @@ export async function getProfileController(req: AuthenticatedRequest, res: Respo
 
   const doctor = await prisma.doctor.findUnique({
     where: { id: doctorId },
-    select: { id: true, email: true, name: true, avatar: true, hospitalId: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatar: true,
+      hospital: {
+        select: { id: true, name: true },
+      },
+    },
   });
 
   if (!doctor) {
@@ -155,6 +168,23 @@ export async function startMonitoringController(req: AuthenticatedRequest, res: 
   }
 
   return res.status(200).json({ success: true, statusCode: 200, message: "Monitoring session started" });
+}
+
+export async function updateProfileController(req: AuthenticatedRequest, res: Response) {
+  const doctorId = req.user?.id;
+  if (!doctorId) {
+    return res.status(401).json({ success: false, statusCode: 401, message: "Unauthorized", error: "Unauthorized" });
+  }
+
+  const parsed = UpdateDoctorProfileSchema.parse(req.body);
+
+  const updated = await prisma.doctor.update({
+    where: { id: doctorId },
+    data: parsed,
+    select: { id: true, email: true, name: true, avatar: true },
+  });
+
+  return res.status(200).json({ success: true, statusCode: 200, message: "Profile updated", data: updated });
 }
 
 export async function createAlertController(req: AuthenticatedRequest, res: Response) {

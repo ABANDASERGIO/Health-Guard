@@ -8,6 +8,7 @@ import {
   getMonitoringSessionsController,
   startMonitoringController,
   createAlertController,
+  updateProfileController,
 } from "../controllers/doctor.controller";
 
 export const doctorRouter = Router();
@@ -23,3 +24,5 @@ doctorRouter.get("/access-requests", requireRole("DOCTOR"), getAccessRequestsCon
 doctorRouter.get("/monitoring/:patientId", requireRole("DOCTOR"), getMonitoringSessionsController);
 doctorRouter.post("/monitoring/start", requireRole("DOCTOR"), startMonitoringController);
 doctorRouter.post("/alerts", requireRole("DOCTOR"), createAlertController);
+
+doctorRouter.put("/profile", requireRole("DOCTOR"), updateProfileController);
