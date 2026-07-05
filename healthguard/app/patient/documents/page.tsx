@@ -114,7 +114,7 @@ export default function PatientDocumentsPage() {
           type: response.data.type as DocType,
           name: response.data.name,
           createdAt: formatDate(new Date(response.data.createdAt)),
-          url: response.data.url,
+          url: resolveDocumentUrl(response.data.url),
           previewUrl,
         };
         setDocs((prev) => [next, ...prev]);
@@ -273,40 +273,44 @@ export default function PatientDocumentsPage() {
                     className={`flex flex-col gap-4 ${d.url ? "cursor-pointer" : ""}`}
                     onClick={() => openDocument(d.url)}
                   >
-                    <div className="flex items-start justify-between gap-4 p-4">
-                      <div className="flex items-start gap-3">
-                        <span className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <div className="flex items-start justify-between gap-3 p-4">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                           {typeMeta[d.type].icon}
                         </span>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold">{d.name}</p>
-                          <p className="mt-1 text-xs text-muted">{d.createdAt}</p>
-                        </div>
-                      </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="truncate text-sm font-semibold">{d.name}</p>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteDocument(d.id);
+                                  }}
+                                  className="inline-flex shrink-0 items-center gap-1 rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-[10px] font-semibold text-danger transition hover:bg-danger/20"
+                                >
+                                  <Trash className="size-3.5" />
+                                  Delete
+                                </button>
+                              </div>
+                              <p className="mt-1 text-xs text-muted">{d.createdAt}</p>
+                            </div>
 
-                      <div className="flex items-center gap-2">
-                        {d.url ? (
-                          <a
-                            href={d.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="rounded-full border border-border bg-muted-bg px-3 py-1 text-[11px] font-semibold text-primary transition hover:bg-primary/10"
-                          >
-                            View
-                          </a>
-                        ) : null}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteDocument(d.id);
-                          }}
-                          className="inline-flex items-center gap-2 rounded-full border border-danger/30 bg-danger/10 px-3 py-1 text-[11px] font-semibold text-danger transition hover:bg-danger/20"
-                        >
-                          <Trash className="size-4" />
-                          Delete
-                        </button>
+                            {d.url ? (
+                              <a
+                                href={d.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="shrink-0 rounded-full border border-border bg-muted-bg px-2.5 py-1 text-[10px] font-semibold text-primary transition hover:bg-primary/10"
+                              >
+                                View
+                              </a>
+                            ) : null}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -323,13 +327,7 @@ export default function PatientDocumentsPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                       </div>
-                    ) : (
-                      <div className="p-4">
-                        <div className="rounded-2xl bg-muted-bg/50 px-4 py-3 text-xs text-muted">
-                          Preview not available for this file type. Upload an image/PDF to show a preview.
-                        </div>
-                      </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ))

@@ -57,6 +57,22 @@ export default function DoctorMonitoringPage() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [vitals, setVitals] = useState<VitalSeries[]>([]);
 
+  const resolveDocumentUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    return `${baseUrl.replace(/\/$/, "")}${url.startsWith("/") ? url : `/${url}`}`;
+  };
+
+  const openDocument = (url?: string) => {
+    const resolved = resolveDocumentUrl(url);
+    if (!resolved) return;
+    window.open(resolved, "_blank", "noopener,noreferrer");
+  };
+
   useEffect(() => {
     (async () => {
       if (!patientId) return;
@@ -440,12 +456,32 @@ export default function DoctorMonitoringPage() {
               ) : (
                 <ul className="space-y-2">
                   {(documents ?? []).slice(0, 5).map((d: any) => (
-                    <li key={d.id} className="rounded-lg border bg-card px-3 py-2">
-                      <div className="text-sm font-semibold">{d.name ?? "Document"}</div>
-                      <div className="text-xs text-muted">
-                        {d.createdAt ? new Date(d.createdAt).toLocaleString() : "—"}
+                    <li
+                      key={d.id}
+                      className={`rounded-lg border bg-card px-3 py-2 ${d.url ? "cursor-pointer transition hover:bg-muted-bg/50" : ""}`}
+                      onClick={() => openDocument(d.url)}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold">{d.name ?? "Document"}</div>
+                          <div className="text-xs text-muted">
+                            {d.createdAt ? new Date(d.createdAt).toLocaleString() : "—"}
+                          </div>
+                          {d.type ? <div className="mt-1 text-[11px] text-muted">{d.type}</div> : null}
+                        </div>
+                        {d.url ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDocument(d.url);
+                            }}
+                            className="shrink-0 rounded-full border border-border bg-muted-bg px-2.5 py-1 text-[10px] font-semibold text-primary transition hover:bg-primary/10"
+                          >
+                            View
+                          </button>
+                        ) : null}
                       </div>
-                      {d.type ? <div className="mt-1 text-[11px] text-muted">{d.type}</div> : null}
                     </li>
                   ))}
                 </ul>
