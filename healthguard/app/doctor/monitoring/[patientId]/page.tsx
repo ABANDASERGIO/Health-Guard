@@ -130,9 +130,9 @@ export default function DoctorMonitoringPage() {
 
       <EncryptionBanner variant="compact" />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column: Upcoming Appointments + Pending Laboratory Results */}
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+        {/* Left column: Upcoming Appointments */}
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -251,63 +251,11 @@ export default function DoctorMonitoringPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FlaskConical className="size-5 text-primary" />
-                Pending Laboratory Results
-              </CardTitle>
-              <CardDescription>Lab work that still needs review.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {appointments ? null : null}
-              <ul className="space-y-2">
-                {(labs ?? []).length === 0 ? (
-                  <li className="text-sm text-muted">No pending lab results found.</li>
-                ) : (
-                  (labs ?? []).slice(0, 5).map((lab) => (
-                    <li key={lab.id} className="rounded-lg border bg-card px-3 py-2">
-                      <div className="text-sm font-semibold">{lab.title ?? lab.name ?? "Lab result"}</div>
-                      <div className="text-xs text-muted">{new Date(lab.createdAt ?? lab.date ?? Date.now()).toLocaleString()}</div>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </CardContent>
-          </Card>
-
-
-          {/* Follow-up Patients */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <RefreshCw className="size-5 text-primary" />
-                Follow-up Patients
-              </CardTitle>
-              <CardDescription>Patients requiring additional review/next steps.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted">Pending backend implementation. (No doctor API for follow-ups yet.)</p>
-              {(followUps ?? []).length === 0 ? (
-                <p className="text-sm text-muted">No follow-ups found.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {(followUps ?? []).slice(0, 5).map((p) => (
-                    <li key={p.id} className="rounded-lg border bg-card px-3 py-2">
-                      <div className="text-sm font-semibold">{p.name ?? "Patient"}</div>
-                      <div className="text-xs text-muted">{p.email ?? ""}</div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-
         </div>
 
 
         {/* Right column: Active Prescriptions + New Patient Documents */}
-        <div className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -486,36 +434,6 @@ export default function DoctorMonitoringPage() {
                   ))}
                 </ul>
               )}
-            </CardContent>
-          </Card>
-
-
-          {/* Keep Doctor updates UI out of the monitoring dashboard for now */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardPlus className="size-5 text-primary" />
-                Doctor updates
-              </CardTitle>
-              <CardDescription>Add diagnoses, Rx, and commentary.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="dx">Diagnosis</Label>
-                <Input id="dx" placeholder="ICD-10 · free text" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="rx">Prescription</Label>
-                <Input id="rx" placeholder="Drug · dose · SIG" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">Doctor notes</Label>
-                <Textarea id="notes" rows={5} placeholder="Structured note stored securely for the patient record." />
-              </div>
-              <Button type="button" className="w-full gap-2" disabled>
-                <Pill className="size-4" />
-                Save to chart (API not wired)
-              </Button>
             </CardContent>
           </Card>
         </div>
