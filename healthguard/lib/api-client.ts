@@ -22,9 +22,10 @@ interface ApiResponse<T = unknown> {
  */
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<ApiResponse<T>> {
   const url = `${API_URL}${endpoint}`;
+  const isFormData = options.body instanceof FormData;
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(!isFormData ? { "Content-Type": "application/json" } : {}),
     ...options.headers,
   };
 
@@ -190,6 +191,34 @@ export const patientApi = {
 
   getMedicalRecords: async (page = 1, limit = 10) =>
     request(`/api/patient/medical-records?page=${page}&limit=${limit}`, { method: "GET" }),
+
+  uploadDocument: async (file: File, type: string, name: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("type", type);
+    formData.append("name", name);
+
+    return request<{
+      id: string;
+      name: string;
+      type: string;
+      url: string;
+      fileId: string;
+      createdAt: string;
+      patientId: string;
+    }>(
+      "/api/patient/documents",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+  },
+
+  deleteDocument: async (documentId: string) =>
+    request<{ id: string }>(`/api/patient/documents/${documentId}`, {
+      method: "DELETE",
+    }),
 
   getActivityLogs: async (page = 1, limit = 100) =>
     request(`/api/patient/activity?page=${page}&limit=${limit}`, { method: "GET" }),

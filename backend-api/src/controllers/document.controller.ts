@@ -62,3 +62,41 @@ export async function uploadPatientDocumentController(req: AuthenticatedRequest,
   });
 }
 
+export async function deletePatientDocumentController(req: AuthenticatedRequest, res: Response) {
+  const patientId = req.user?.id;
+  if (!patientId) {
+    return res.status(401).json({ success: false, statusCode: 401, message: "Unauthorized", error: "Unauthorized" });
+  }
+
+  const documentId = req.params.id;
+  if (!documentId) {
+    return res.status(400).json({ success: false, statusCode: 400, message: "Document ID is required", error: "Document ID is required" });
+  }
+
+  const existing = await prisma.document.findFirst({
+    where: { id: documentId, patientId },
+  });
+
+  if (!existing) {
+    return res.status(404).json({ success: false, statusCode: 404, message: "Document not found", error: "Document not found" });
+  }
+
+  const filePath = path.join(process.cwd(), "uploads", existing.fileId || "");
+  if (existing.fileId && fs.existsSync(filePath)) {
+    try {
+      fs.unlinkSync(filePath);
+    } catch (unlinkErr) {
+      console.error("Failed to delete document file:", unlinkErr);
+    }
+  }
+
+  await prisma.document.delete({ where: { id: documentId } });
+
+  return res.status(200).json({
+    success: true,
+    statusCode: 200,
+    message: "Document deleted",
+    data: { id: documentId },
+  });
+}
+

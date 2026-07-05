@@ -7,7 +7,7 @@ type AnyMulter = any;
 import path from "path";
 import fs from "fs";
 
-import { uploadPatientDocumentController } from "../controllers/document.controller";
+import { uploadPatientDocumentController, deletePatientDocumentController } from "../controllers/document.controller";
 
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
@@ -34,5 +34,11 @@ documentRouter.post(
   requireRole("PATIENT"),
   upload.single("file"),
   uploadPatientDocumentController
+);
+
+documentRouter.delete(
+  "/patient/documents/:id",
+  requireRole("PATIENT"),
+  deletePatientDocumentController
 );
 
