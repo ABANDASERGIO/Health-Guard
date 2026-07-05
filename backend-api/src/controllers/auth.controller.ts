@@ -6,6 +6,7 @@ import { PrismaClient, Role } from "@prisma/client";
 import { registerService, loginService, verifyOtpService, requestOtpService, requestPasswordResetService, verifyPasswordResetOtpService, resetPasswordService } from "../services/auth.service";
 
 const prisma = new PrismaClient();
+const isDev = process.env.NODE_ENV !== "production";
 
 
 const RegisterSchema = z.object({
@@ -42,9 +43,19 @@ export async function registerController(req: Request, res: Response) {
   } catch (err: any) {
     const statusCode = err?.statusCode || 400;
 
-    // Hide internal/db details from client (e.g., Prisma connection errors)
-    const isPrismaKnown = typeof err?.code === "string";
-    const message = isPrismaKnown ? "Unable to complete registration. Please try again later." : (err?.message || "Registration failed");
+    // Safe, user-friendly messages (avoid leaking internal details)
+    // Prisma unique constraint error commonly appears as code "P2002".
+    const isUniqueViolation = err?.code === "P2002";
+    if (isUniqueViolation) {
+      return res.status(409).json({
+        success: false,
+        statusCode: 409,
+        message: "Email already registered",
+        error: "Email already registered",
+      });
+    }
+
+    const message = err?.message || "Unable to complete registration. Please try again later.";
 
     return res.status(statusCode).json({
       success: false,
@@ -55,6 +66,7 @@ export async function registerController(req: Request, res: Response) {
   }
 }
 
+
 export async function loginController(req: Request, res: Response) {
   try {
     const body = LoginSchema.parse(req.body);
@@ -62,16 +74,23 @@ export async function loginController(req: Request, res: Response) {
     return res.status(200).json({ success: true, statusCode: 200, message: "Login successful", data });
   } catch (err: any) {
     const statusCode = err?.statusCode || 401;
-
-    // Hide internal/db details from client (e.g., Prisma connection errors)
     const isPrismaKnown = typeof err?.code === "string";
-    const message = isPrismaKnown ? "Unable to sign in right now. Please try again later." : (err?.message || "Login failed");
+    const defaultMessage = isPrismaKnown ? "Unable to sign in right now. Please try again later." : (err?.message || "Login failed");
+    const actualMessage = err?.message || defaultMessage;
+
+    console.error("[loginController] login failure", {
+      message: actualMessage,
+      statusCode,
+      code: err?.code,
+      stack: err?.stack,
+      error: err,
+    });
 
     return res.status(statusCode).json({
       success: false,
       statusCode,
-      message,
-      error: message,
+      message: defaultMessage,
+      error: isDev ? actualMessage : defaultMessage,
     });
   }
 }

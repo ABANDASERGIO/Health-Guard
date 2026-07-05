@@ -32,6 +32,8 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   const token = localStorage.getItem("auth_token");
   if (token) {
     headers.Authorization = `Bearer ${token}`;
+  } else {
+    console.warn(`[api-client] Missing auth_token for ${endpoint}`);
   }
 
   const response = await fetch(url, {
@@ -194,7 +196,24 @@ export const patientApi = {
 
   getAppointments: async (page = 1, limit = 20) =>
     request(`/api/patient/appointments?page=${page}&limit=${limit}`, { method: "GET" }),
+
+  getActivePrescriptions: async () =>
+    request(`/api/patient/prescriptions/active`, { method: "GET" }),
+
+  createAppointment: async (data: {
+    specialty: string;
+    provider: string;
+    datetime: string;
+    location: string;
+    reason: string;
+    appointmentType?: string;
+  }) =>
+    request("/api/patient/appointments", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };
+
 
 /**
  * Doctor API endpoints
@@ -208,6 +227,7 @@ export const doctorApi = {
       avatar?: string | null;
       hospital?: { name: string } | null;
     }>("/api/doctor/profile", { method: "GET" }),
+
 
   updateProfile: async (data: {
     name?: string;
@@ -236,23 +256,73 @@ export const doctorApi = {
   getMonitoringSessions: async (patientId: string) =>
     request(`/api/doctor/monitoring/${patientId}`, { method: "GET" }),
 
+  getDoctorAppointments: async (patientId: string) =>
+    request(`/api/doctor/monitoring/appointments/${patientId}`, { method: "GET" }),
+
+  updateAppointmentStatus: async (appointmentId: string, status: "SCHEDULED" | "COMPLETED" | "CANCELLED" | "MISSED") =>
+    request(`/api/doctor/monitoring/appointments/${appointmentId}/status`, {
+      method: "POST",
+      body: JSON.stringify({ status }),
+    }),
+
+
   startMonitoring: async (patientId: string) =>
     request("/api/doctor/monitoring/start", {
       method: "POST",
       body: JSON.stringify({ patientId }),
     }),
 
+
   createAlert: async (patientId: string, title: string, description: string, severity: string) =>
     request("/api/doctor/alerts", {
       method: "POST",
       body: JSON.stringify({ patientId, title, description, severity }),
     }),
+
+  getPendingLabResults: async (patientId: string) =>
+    request(`/api/doctor/monitoring/labs/${patientId}/pending`, { method: "GET" }),
+
+  getFollowUpPatients: async (patientId: string) =>
+    request(`/api/doctor/monitoring/follow-ups/${patientId}`, { method: "GET" }),
+
+  getActivePrescriptions: async (patientId: string) =>
+    request(`/api/doctor/monitoring/prescriptions/${patientId}/active`, { method: "GET" }),
+
+  createPrescription: async (
+    patientId: string,
+    data: { title?: string; description?: string; drug: string; dose: string; sig: string; refills: number; expires: string }
+  ) =>
+    request(`/api/doctor/monitoring/prescriptions/${patientId}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  updatePrescription: async (
+    patientId: string,
+    prescriptionId: string,
+    data: { title?: string; description?: string; drug?: string; dose?: string; sig?: string; refills?: number; expires?: string }
+  ) =>
+    request(`/api/doctor/monitoring/prescriptions/${patientId}/${prescriptionId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  deletePrescription: async (patientId: string, prescriptionId: string) =>
+    request(`/api/doctor/monitoring/prescriptions/${patientId}/${prescriptionId}`, {
+      method: "DELETE",
+    }),
+
+  getNewPatientDocuments: async (patientId: string) =>
+    request(`/api/doctor/monitoring/documents/${patientId}/new`, { method: "GET" }),
 };
+
+
 
 /**
  * Admin API endpoints
  */
 export const adminApi = {
+
   getDashboardStats: async () => request("/api/admin/dashboard/stats", { method: "GET" }),
 
   getHospitals: async (page = 1, limit = 20) =>

@@ -11,9 +11,23 @@ import { patientRouter } from "./routes/patient.routes";
 import { doctorRouter } from "./routes/doctor.routes";
 import { adminRouter } from "./routes/admin.routes";
 import { notificationRouter } from "./routes/notification.routes";
+import { doctorAppointmentsRouter } from "./routes/doctor-appointments.routes";
+import { doctorLabsRouter } from "./routes/doctor-labs.routes";
+import { doctorFollowUpsRouter } from "./routes/doctor-followups.routes";
+import { doctorPrescriptionsRouter } from "./routes/doctor-prescriptions.routes";
+import { doctorDocumentsRouter } from "./routes/doctor-documents.routes";
+import { patientPrescriptionsRouter } from "./routes/patient-prescriptions.routes";
+
 import { documentRouter } from "./routes/document.routes";
 
+
+
+
+
+
+
 const app = express();
+
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN || "http://localhost:3000",
@@ -29,7 +43,17 @@ app.use("/api/patient", patientRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/notifications", notificationRouter);
+app.use("/api/doctor", doctorAppointmentsRouter);
+app.use("/api/doctor", doctorLabsRouter);
+app.use("/api/doctor", doctorFollowUpsRouter);
+app.use("/api/doctor", doctorPrescriptionsRouter);
+app.use("/api/doctor", doctorDocumentsRouter);
+app.use("/api/patient", patientPrescriptionsRouter);
+
 app.use("/api", documentRouter);
+
+
+
 
 // serve uploaded docs (filesystem uploads)
 app.use("/uploads", expressStatic("uploads"));

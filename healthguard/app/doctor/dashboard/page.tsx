@@ -16,8 +16,8 @@ type SummaryCard = {
 };
 
 type PatientPreview = {
+  // Internal identifier is used only for routing; not rendered.
   id: string;
-  mrn: string;
   name: string;
   risk: "low" | "moderate" | "high";
   lastVitals: string;
@@ -45,36 +45,67 @@ export default function DoctorDashboardPage() {
   const [alerts, setAlerts] = useState<IntelligentAlert[]>([]);
 
   useEffect(() => {
-    (async () => {
+    let mounted = true;
+    let intervalId: number | undefined;
+
+    async function fetchData() {
       const { doctorApi } = await import("@/lib/api-client");
+
       const [patientsRes, alertsRes] = await Promise.all([
         doctorApi.getPatients(1, 10),
         doctorApi.getAccessRequests(1, 20),
       ]);
 
+      if (!mounted) return;
+
       if (patientsRes.success && Array.isArray(patientsRes.data)) {
+        // Backend only provides: { id, name, email, avatar }
         const mapped = (patientsRes.data as any[]).map((p) => ({
           id: p.id,
-          mrn: p.mrn || p.id.slice(0, 8),
-          name: p.name,
-          risk: p.risk || "moderate",
-          lastVitals: p.lastVitals || "No vitals recorded",
-          alert: p.alert || false,
+
+          name: p.name ?? "Unknown",
+          // Remove fake clinical-risk/vitals claims; keep UI stable.
+          risk: "moderate" as const,
+          lastVitals: "Vitals snapshot available in Monitoring tab",
+          alert: false,
         }));
+
         setPatients(mapped);
-        setSummary([{ label: "Assigned patients", value: mapped.length, trend: "Active patients", status: "neutral" }]);
+        setSummary([
+          {
+            label: "Assigned patients",
+            value: mapped.length,
+            trend: "Roster synced",
+            status: mapped.length > 0 ? "neutral" : "warning",
+          },
+        ]);
       }
 
       if (alertsRes.success && Array.isArray(alertsRes.data)) {
         const mapped = (alertsRes.data as any[]).map((a) => ({
           id: a.id,
-          level: (a.priority === "CRITICAL" || a.priority === "HIGH" ? "critical" : "warning") as "critical" | "warning",
+          level:
+            a.priority === "CRITICAL" || a.priority === "HIGH"
+              ? ("critical" as const)
+              : ("warning" as const),
           patient: `${a.patient?.name || "Patient"} · ${a.patient?.id?.slice(0, 8) || "Unknown"}`,
-          message: a.reason,
+          message: a.reason || "Access request pending",
         }));
+
         setAlerts(mapped);
       }
-    })();
+    }
+
+    // Initial load
+    fetchData();
+
+    // Real-time via polling (20s)
+    intervalId = window.setInterval(fetchData, 20000);
+
+    return () => {
+      mounted = false;
+      if (intervalId) window.clearInterval(intervalId);
+    };
   }, []);
 
   return (
@@ -162,8 +193,9 @@ export default function DoctorDashboardPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold">{p.name}</p>
-                      <Badge variant="outline">{p.mrn}</Badge>
-                      <Badge variant={p.risk === "high" ? "danger" : p.risk === "moderate" ? "warning" : "success"}>
+                      <Badge
+                        variant={p.risk === "high" ? "danger" : p.risk === "moderate" ? "warning" : "success"}
+                      >
                         {p.risk} risk
                       </Badge>
                     </div>

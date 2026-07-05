@@ -12,6 +12,7 @@ import {
   getMedicalRecordsController,
   getActivityLogsController,
   getAppointmentsController,
+  createAppointmentController,
 } from "../controllers/patient.controller";
 
 export const patientRouter = Router();
@@ -19,6 +20,7 @@ export const patientRouter = Router();
 patientRouter.use(authenticateToken);
 
 patientRouter.get("/profile", requireRole("PATIENT"), getProfileController);
+
 patientRouter.put("/profile", requireRole("PATIENT"), updateProfileController);
 
 patientRouter.get("/vitals", requireRole("PATIENT"), getVitalsController);
@@ -34,3 +36,5 @@ patientRouter.get("/medical-records", requireRole("PATIENT"), getMedicalRecordsC
 patientRouter.get("/activity", requireRole("PATIENT"), getActivityLogsController);
 
 patientRouter.get("/appointments", requireRole("PATIENT"), getAppointmentsController);
+
+patientRouter.post("/appointments", requireRole("PATIENT"), createAppointmentController);

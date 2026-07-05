@@ -1,7 +1,25 @@
-- [ ] Step 1: Implement real patient document upload (backend endpoint + frontend upload) so documents persist and doctors can see them in real-time (via refetch).
-- [ ] Step 2: Fix notifications end-to-end (fetch on load + audience casing + ensure backend create events are visible).
-- [ ] Step 3: Fix activity logs for patient profile updates (create ActivityLog entries; ensure frontend mapping).
-- [ ] Step 4: Fix token-expiry “not authorized” while inside app by adding refresh-on-401 retry in api-client.
-- [ ] Step 5: Settings tab backend wiring (if endpoints exist; otherwise keep UI disabled).
-- [ ] Step 6: Ensure appointments UI works (seed + UI binding) and verify doctor/patient flows.
+# HealthGuard - TODO
+
+## Patient appointment request (doctor access flow)
+- [ ] Add backend POST endpoint for patient to create appointments
+- [ ] Update Prisma schema Appointment model (appointmentType/status/reason) and create migration
+- [ ] Implement backend service/controller logic:
+  - Validate input
+  - Create Appointment with server-controlled status="PENDING"
+  - Set encrypted=true default
+- [ ] Implement frontend create appointment UI in `healthguard/app/patient/dashboard/page.tsx` (or new component)
+  - Replace the placeholder button/alert
+  - POST to backend via `patientApi`
+  - Refresh appointments list after success
+- [ ] Ensure doctor access request + notification flow (if required by the requested feature)
+
+## End-to-end realtime prescriptions (doctor -> patient)
+- [x] Doctor can fetch active prescriptions for a patient: `GET /api/doctor/monitoring/prescriptions/:patientId/active`
+- [ ] Add patient-facing endpoint to fetch active prescriptions for the logged-in patient (include doctor name)
+- [ ] Add backend POST endpoint to create prescription (doctor -> patient) with fields in Prisma `Prescription`
+- [ ] Implement doctor frontend “Add prescription” form (replace alert) to call create endpoint
+- [ ] Implement patient frontend to fetch and poll active prescriptions from patient-facing endpoint
+
+## Auth OTP + password reset
+- [ ] (No action) OTP works well per user feedback.
 

@@ -10,7 +10,12 @@ import { PageHeader } from "@/components/ui/page-header";
 import { VitalsTrendChart } from "@/components/charts/vitals-trend-chart";
 import type { ActivityLogEntry, VitalReading, AccessRequest } from "@/types";
 
+
+import { CreateAppointmentForm } from "./create-appointment-form";
+import { ActivePrescriptionsCard } from "./ActivePrescriptionsCard";
 import { useAuthStore } from "@/stores/auth-store";
+
+
 
 type AccessRequestWithHospital = AccessRequest & { doctorHospital?: string };
 
@@ -39,6 +44,8 @@ export default function PatientDashboardPage() {
   const [vitals, setVitals] = useState<VitalReading[]>([]);
   const [accessRequests, setAccessRequests] = useState<AccessRequestWithHospital[]>([]);
   const [now, setNow] = useState(() => new Date());
+  const [showCreate, setShowCreate] = useState(false);
+
 
   useEffect(() => {
     const t = window.setInterval(() => setNow(new Date()), 1000 * 30);
@@ -124,31 +131,8 @@ export default function PatientDashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        title={
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center overflow-hidden rounded-full bg-muted-bg ring-1 ring-border">
-              {user?.avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={user.avatar}
-                  alt={user?.name ? `${user.name} avatar` : "User avatar"}
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                  loading="lazy"
-                  onError={(e) => {
-                    const el = e.currentTarget;
-                    el.style.display = "none";
-                  }}
-                />
-              ) : (
-                <span className="text-xs font-semibold text-muted">{(user?.name || "P").slice(0, 1).toUpperCase()}</span>
-              )}
-            </div>
-            <span>
-              Welcome back, {user?.name?.split(" ")[0] ?? "Patient"}
-            </span>
-          </div>
-        }
+        title={"Patient monitoring"}
+
         description={
           `Today is ${format(now, "EEEE, MMM d, yyyy")} · Your monitoring workspace updates automatically.`
         }
@@ -163,26 +147,7 @@ export default function PatientDashboardPage() {
       <EncryptionBanner />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-
-          <CardHeader>
-            <CardTitle>Protected vitals snapshot</CardTitle>
-            <CardDescription>Secure trends from your latest measurements.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {vitals.length === 0 ? (
-              <p className="text-sm text-muted">No vitals recorded yet.</p>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-sm text-muted">
-                  Latest reading is shown in the vitals chart below.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -192,9 +157,61 @@ export default function PatientDashboardPage() {
               <CardDescription>Protected scheduling references.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {appointments.length === 0 ? (
+              <div className="flex items-start justify-between gap-3 rounded-xl border border-border bg-muted-bg/40 p-4">
+                <div>
+                  <p className="text-sm font-semibold">Appointments</p>
+                  <p className="mt-1 text-xs text-muted">Create a new appointment request (backend wiring in Step 2).</p>
+                </div>
+
+                <button
+                  type="button"
+                  className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                  onClick={() => {
+                    setShowCreate((v) => !v);
+                  }}
+                >
+                  Create appointment
+                </button>
+
+                {showCreate ? (
+                  <button
+                    type="button"
+                    className="ml-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted-bg"
+                    onClick={() => setShowCreate(false)}
+                  >
+                    Cancel
+                  </button>
+                ) : null}
+              </div>
+
+
+              {showCreate ? (
+                <CreateAppointmentForm
+                  onCancel={() => setShowCreate(false)}
+                  onCreated={() => {
+                    setShowCreate(false);
+                    // Reload appointments on success
+                    void (async () => {
+                      const { patientApi } = await import("@/lib/api-client");
+                      const res = await patientApi.getAppointments(1, 5);
+                      if (res.success && Array.isArray(res.data)) {
+                        const mapped = (res.data as any[]).map((a) => ({
+                          id: a.id,
+                          specialty: a.specialty || "Appointment",
+                          provider: a.provider || "Provider",
+                          datetime: a.datetime,
+                          location: a.location || "Location",
+                          encrypted: a.encrypted ?? true,
+                        }));
+                        setAppointments(mapped);
+                      }
+                    })();
+                  }}
+                />
+              ) : appointments.length === 0 ? (
                 <p className="text-sm text-muted">No upcoming appointments.</p>
               ) : (
+
                 appointments.map((ap) => (
                   <div key={ap.id} className="rounded-xl border border-border p-4">
                     <div className="flex items-center justify-between gap-2">
@@ -215,6 +232,7 @@ export default function PatientDashboardPage() {
               )}
             </CardContent>
           </Card>
+
         </div>
       </div>
 
@@ -226,6 +244,12 @@ export default function PatientDashboardPage() {
           hr: v.heartRate,
         }))} />
       ) : null}
+
+      {/* Active prescriptions (doctor -> patient) */}
+      <div className="lg:mt-2">
+        <ActivePrescriptionsCard />
+      </div>
+
     </div>
   );
 }

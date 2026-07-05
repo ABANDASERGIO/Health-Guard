@@ -4,7 +4,8 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { sendPasswordResetEmail } from "./email.service";
 
-const prisma = new PrismaClient();
+import { prisma } from "../prisma";
+
 
 const RegisterSchema = z.object({
   email: z.string().email(),
