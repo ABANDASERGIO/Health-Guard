@@ -13,18 +13,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authApi } from "@/lib/api-client";
 
-const changePasswordFormSchema = z
+const resetPasswordFormSchema = z
   .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(8, "At least 8 characters"),
-    confirmNewPassword: z.string().min(1, "Please confirm your new password"),
+    otp: z.string().min(1, "Verification code is required"),
+    password: z.string().min(8, "At least 8 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your new password"),
   })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
-    path: ["confirmNewPassword"],
+    path: ["confirmPassword"],
   });
 
-type FormValues = z.infer<typeof changePasswordFormSchema>;
+type FormValues = z.infer<typeof resetPasswordFormSchema>;
 
 // NOTE: legacy OTP-based recovery page kept for reference.
 // New authenticated Change Password is implemented at /auth/change-password.

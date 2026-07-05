@@ -75,10 +75,12 @@ export const useNotificationsStore = create<NotificationsState>()(
 
 export function selectNotificationsForRole(role: UserRole | undefined, items: NotificationRecord[]) {
   if (!role) return [];
-  return items.filter((i) => i.audience === role);
+  const normalizedRole = role.toLowerCase();
+  return items.filter((i) => i.audience.toLowerCase() === normalizedRole);
 }
 
 export function unreadCountForRole(role: UserRole | undefined, items: NotificationRecord[]) {
   if (!role) return 0;
-  return items.filter((i) => i.audience === role && !i.read).length;
+  const normalizedRole = role.toLowerCase();
+  return items.filter((i) => i.audience.toLowerCase() === normalizedRole && !i.read).length;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { NotificationsList } from "@/components/notifications/notifications-list";
 import { PageHeader } from "@/components/ui/page-header";
@@ -17,8 +18,10 @@ export default function PatientNotificationsPage() {
    const markAllRead = useNotificationsStore((s) => s.markAllRead);
 
    const fetch = useNotificationsStore((s) => s.fetch);
-   void fetch; // keep reference; current page relies on store state
 
+   useEffect(() => {
+     fetch();
+   }, [fetch]);
 
    const scoped = selectNotificationsForRole(role, items);
 

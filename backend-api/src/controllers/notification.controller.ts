@@ -15,9 +15,13 @@ const CreateNotificationSchema = z.object({
 
 export async function createNotificationController(req: Request, res: Response) {
   const parsed = CreateNotificationSchema.parse(req.body);
+  const normalizedAudience = parsed.audience.toLowerCase();
 
   const notification = await prisma.notification.create({
-    data: parsed,
+    data: {
+      ...parsed,
+      audience: normalizedAudience,
+    },
   });
 
   return res.status(201).json({ success: true, statusCode: 201, message: "Notification created", data: notification });
@@ -29,12 +33,14 @@ export async function getNotificationsController(req: AuthenticatedRequest, res:
     return res.status(401).json({ success: false, statusCode: 401, message: "Unauthorized", error: "Unauthorized" });
   }
 
+  const requestedAudience = role.toLowerCase();
   const notifications = await prisma.notification.findMany({
-    where: { audience: role.toLowerCase() },
     orderBy: { createdAt: "desc" },
   });
 
-  return res.status(200).json({ success: true, statusCode: 200, message: "Notifications retrieved", data: notifications });
+  const scopedNotifications = notifications.filter((notification) => notification.audience.toLowerCase() === requestedAudience);
+
+  return res.status(200).json({ success: true, statusCode: 200, message: "Notifications retrieved", data: scopedNotifications });
 }
 
 export async function markReadController(req: AuthenticatedRequest, res: Response) {

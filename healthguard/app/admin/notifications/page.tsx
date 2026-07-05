@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { NotificationsList } from "@/components/notifications/notifications-list";
 import { PageHeader } from "@/components/ui/page-header";
@@ -14,6 +15,11 @@ export default function AdminNotificationsPage() {
    const items = useNotificationsStore((s) => s.items);
    const markRead = useNotificationsStore((s) => s.markRead);
    const markAllRead = useNotificationsStore((s) => s.markAllRead);
+   const fetch = useNotificationsStore((s) => s.fetch);
+
+   useEffect(() => {
+     fetch();
+   }, [fetch]);
 
    const scoped = selectNotificationsForRole(role, items);
 
