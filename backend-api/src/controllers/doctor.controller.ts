@@ -13,6 +13,8 @@ const RequestAccessSchema = z.object({
 const UpdateDoctorProfileSchema = z.object({
   name: z.string().min(1).optional(),
   avatar: z.string().optional(),
+  phone: z.string().optional(),
+  specialty: z.string().optional(),
 });
 
 export async function getProfileController(req: AuthenticatedRequest, res: Response) {
@@ -28,6 +30,8 @@ export async function getProfileController(req: AuthenticatedRequest, res: Respo
       email: true,
       name: true,
       avatar: true,
+      phone: true,
+      specialty: true,
       hospital: {
         select: { id: true, name: true },
       },
@@ -180,7 +184,14 @@ export async function updateProfileController(req: AuthenticatedRequest, res: Re
   const updated = await prisma.doctor.update({
     where: { id: doctorId },
     data: parsed,
-    select: { id: true, email: true, name: true, avatar: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatar: true,
+      phone: true,
+      specialty: true,
+    },
   });
 
   return res.status(200).json({ success: true, statusCode: 200, message: "Profile updated", data: updated });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
 import { NotificationsList } from "@/components/notifications/notifications-list";
 import { PageHeader } from "@/components/ui/page-header";
@@ -16,9 +16,17 @@ export default function AdminNotificationsPage() {
    const markRead = useNotificationsStore((s) => s.markRead);
    const markAllRead = useNotificationsStore((s) => s.markAllRead);
    const fetch = useNotificationsStore((s) => s.fetch);
+   const [lastUpdated, setLastUpdated] = useState("");
+
+   const refreshNotifications = async () => {
+     await fetch();
+     setLastUpdated(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+   };
 
    useEffect(() => {
-     fetch();
+     refreshNotifications();
+     const interval = window.setInterval(refreshNotifications, 60000);
+     return () => window.clearInterval(interval);
    }, [fetch]);
 
    const scoped = selectNotificationsForRole(role, items);
@@ -30,6 +38,7 @@ export default function AdminNotificationsPage() {
          description="Security events, directory updates, and platform notices for administrators."
        />
        <EncryptionBanner variant="compact" />
+       <p className="text-sm text-muted">Live updates refresh every 60 seconds. Last updated {lastUpdated || "—"}.</p>
        <NotificationsList
          items={scoped}
          onMarkRead={markRead}

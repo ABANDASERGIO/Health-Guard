@@ -14,6 +14,8 @@ type DoctorProfile = {
   email: string;
   name: string;
   avatar?: string | null;
+  phone?: string | null;
+  specialty?: string | null;
   hospital?: { name: string } | null;
 };
 
@@ -79,10 +81,10 @@ export default function DoctorProfilePage() {
           <Card className="rounded-3xl border-border bg-card shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="relative flex size-20 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-3xl font-bold text-primary">
+                <div className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-3xl font-bold text-primary">
                   {profile.avatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={profile.avatar} alt="Doctor avatar" className="size-full object-cover" />
+                    <img src={profile.avatar} alt="Doctor avatar" width={80} height={80} className="h-full w-full object-cover" />
                   ) : (
                     <UserRound className="size-8" />
                   )}
@@ -96,6 +98,17 @@ export default function DoctorProfilePage() {
                     <Badge variant="outline">Doctor</Badge>
                     <Badge>Hospital: {profile.hospital?.name ?? "Not set"}</Badge>
                   </div>
+                </div>
+              </div>
+
+              <div className="mt-6 space-y-3 rounded-2xl bg-muted-bg/40 p-4">
+                <div>
+                  <p className="text-xs font-medium text-muted">Specialty</p>
+                  <p className="mt-1 text-sm">{profile.specialty ?? "Not specified"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted">Phone</p>
+                  <p className="mt-1 text-sm">{profile.phone ?? "Not specified"}</p>
                 </div>
               </div>
 

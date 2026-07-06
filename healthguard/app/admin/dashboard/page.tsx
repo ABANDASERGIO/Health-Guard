@@ -1,48 +1,61 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
+import { Plus, Users, UserPlus2 } from "lucide-react";
 import { EncryptionBanner } from "@/components/security/encryption-banner";
-import { AnalyticsBarChart } from "@/components/charts/analytics-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { LinkButton } from "@/components/ui/link-button";
 
-type SummaryCard = {
-  label: string;
-  value: string | number;
-  trend: string;
-  status: "success" | "warning" | "neutral";
+type NotificationItem = {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+  read: boolean;
+  link?: string | null;
+  createdAt: string;
 };
 
-const growth = [
-  { name: "Jan", value: 820 },
-  { name: "Feb", value: 864 },
-  { name: "Mar", value: 910 },
-  { name: "Apr", value: 942 },
-];
+type DashboardStats = {
+  totalDoctors: number;
+  activeDoctors: number;
+  inactiveDoctors: number;
+  patientsUnderCare: number;
+  recentNotifications: NotificationItem[];
+};
+
+const statsOrder = [
+  { label: "Total Doctors", key: "totalDoctors" },
+  { label: "Active Doctors", key: "activeDoctors" },
+  { label: "Inactive Doctors", key: "inactiveDoctors" },
+  { label: "Patients Under Care", key: "patientsUnderCare" },
+] as const;
 
 export default function AdminDashboardPage() {
-  const [summary, setSummary] = useState<SummaryCard[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const { adminApi } = await import("@/lib/api-client");
       const res = await adminApi.getDashboardStats();
-      if (res.success && Array.isArray(res.data)) {
-        setSummary(res.data as SummaryCard[]);
+      if (res.success && res.data) {
+        setStats(res.data as DashboardStats);
       }
+      setLoading(false);
     })();
   }, []);
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Enterprise overview"
-        description="Aggregate utilization, workforce footprint, and security telemetry across the HealthGuard network."
+        title="Hospital dashboard"
+        description="View your hospital’s doctors, patient access, and latest notifications in real time."
         actions={
-          <LinkButton href="/admin/logs" variant="secondary">
-            Open system logs
+          <LinkButton href="/admin/doctors" variant="secondary">
+            Manage doctors
           </LinkButton>
         }
       />
@@ -50,19 +63,31 @@ export default function AdminDashboardPage() {
       <EncryptionBanner variant="compact" />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {summary.length === 0 ? (
-          <p className="text-sm text-muted">No stats available.</p>
-        ) : (
-          summary.map((c) => (
-            <Card key={c.label}>
+        {loading || !stats ? (
+          Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index}>
               <CardHeader className="pb-2">
-                <CardDescription>{c.label}</CardDescription>
-                <CardTitle className="text-3xl">{c.value}</CardTitle>
+                <div className="h-4 rounded bg-muted/50" />
+                <CardTitle>
+                  <span className="block h-12 rounded bg-muted/50" />
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted">{c.trend}</p>
-                <Badge variant={c.status === "success" ? "success" : c.status === "warning" ? "warning" : "outline"} className="mt-3">
-                  Monitored
+                <div className="h-4 rounded bg-muted/50" />
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          statsOrder.map((item) => (
+            <Card key={item.label}>
+              <CardHeader className="pb-2">
+                <CardDescription>{item.label}</CardDescription>
+                <CardTitle className="text-3xl">{stats[item.key]}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted">Updated live from hospital records.</p>
+                <Badge variant="outline" className="mt-3">
+                  {item.label}
                 </Badge>
               </CardContent>
             </Card>
@@ -70,28 +95,48 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      <AnalyticsBarChart title="Monthly active clinician sessions (000s)" data={growth} dataKey="value" />
-
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[2fr_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Access log summary</CardTitle>
-            <CardDescription>Unauthorized attempts held at 0.02% after MFA enforcement.</CardDescription>
+            <CardTitle>Recent notifications</CardTitle>
+            <CardDescription>Latest events for your hospital’s doctors and operations.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted">
-            <p>Centralized audit streams support review dashboards with traceable history (demo).</p>
-            <Badge variant="primary">HIPAA-aligned control mapping</Badge>
+          <CardContent className="space-y-4">
+            {!loading && stats?.recentNotifications.length === 0 ? (
+              <p className="text-sm text-muted">No notifications available.</p>
+            ) : (
+              stats?.recentNotifications.map((notification) => (
+                <div key={notification.id} className="rounded-xl border border-border p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium">{notification.title}</p>
+                      <p className="text-sm text-muted">{notification.description}</p>
+                    </div>
+                    <Badge variant={notification.read ? "outline" : "primary"}>
+                      {notification.read ? "Read" : "New"}
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>Security monitoring widgets</CardTitle>
-            <CardDescription>Live posture indicators refreshed every 60 seconds.</CardDescription>
+            <CardTitle>Quick actions</CardTitle>
+            <CardDescription>Jump straight to common hospital administration workflows.</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            <Badge variant="success">Encryption coverage 100%</Badge>
-            <Badge variant="outline">RBAC drift check OK</Badge>
-            <Badge variant="warning">3 hospitals pending extra authentication</Badge>
+          <CardContent className="space-y-3">
+            <LinkButton href="/admin/doctors" variant="secondary" className="w-full justify-start gap-2 flex">
+              <Plus className="size-4" /> Add doctor
+            </LinkButton>
+            <LinkButton href="/admin/doctors" variant="outline" className="w-full justify-start gap-2 flex">
+              <Users className="size-4" /> View doctors
+            </LinkButton>
+            <LinkButton href="/admin/patients" variant="outline" className="w-full justify-start gap-2 flex">
+              <UserPlus2 className="size-4" /> View patients
+            </LinkButton>
           </CardContent>
         </Card>
       </div>

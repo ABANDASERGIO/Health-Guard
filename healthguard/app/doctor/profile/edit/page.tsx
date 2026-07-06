@@ -15,6 +15,8 @@ import { doctorApi } from "@/lib/api-client";
 const editSchema = z.object({
   name: z.string().min(1, "Name is required"),
   avatar: z.string().optional(),
+  phone: z.string().optional(),
+  specialty: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof editSchema>;
@@ -27,6 +29,8 @@ export default function DoctorProfileEditPage() {
 
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("");
+  const [phone, setPhone] = useState("");
+  const [specialty, setSpecialty] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -42,6 +46,8 @@ export default function DoctorProfileEditPage() {
         if (!mounted) return;
         setName(res.data.name ?? "");
         setAvatar(res.data.avatar ?? "");
+        setPhone(res.data.phone ?? "");
+        setSpecialty(res.data.specialty ?? "");
       } catch (e) {
         if (!mounted) return;
         setError(e instanceof Error ? e.message : "Failed to load profile");
@@ -63,6 +69,8 @@ export default function DoctorProfileEditPage() {
       const parsed: FormValues = editSchema.parse({
         name: name.trim(),
         avatar: avatar.trim() ? avatar.trim() : undefined,
+        phone: phone.trim() ? phone.trim() : undefined,
+        specialty: specialty.trim() ? specialty.trim() : undefined,
       });
 
       const res = await doctorApi.updateProfile(parsed);
@@ -106,14 +114,31 @@ export default function DoctorProfileEditPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="doctor-email">Email</Label>
-                <Input id="doctor-email" value={""} disabled />
-                <p className="text-xs text-muted">Email is managed by the account system.</p>
+                <Input id="doctor-email" type="email" value={""} disabled className="bg-muted cursor-not-allowed" />
+                <p className="text-xs text-muted">Email is managed by your account system and cannot be changed here. To change your email, contact your hospital administrator.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="specialty">Specialty</Label>
+                <Input
+                  id="specialty"
+                  value={specialty}
+                  onChange={(e) => setSpecialty(e.target.value)}
+                  placeholder="e.g., Cardiology, Pediatrics"
+                  disabled={loading || saving}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" value={""} disabled />
-                <p className="text-xs text-muted">No phone field is currently supported for doctors in the backend.</p>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g., +1 (555) 123-4567"
+                  disabled={loading || saving}
+                />
               </div>
             </div>
 
@@ -139,7 +164,7 @@ export default function DoctorProfileEditPage() {
 
               {avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatar} alt="Doctor avatar preview" className="mt-3 size-24 rounded-full object-cover border border-border bg-card" />
+                <img src={avatar} alt="Doctor avatar preview" width={96} height={96} className="mt-3 h-24 w-24 rounded-full border border-border bg-card object-cover" />
               ) : (
                 <div className="mt-3 rounded-full border border-border bg-card p-4 text-sm text-muted">No image selected</div>
               )}

@@ -376,6 +376,18 @@ export async function loginService(input: LoginInput) {
     },
   });
 
+  if (doctor) {
+    await prisma.notification.create({
+      data: {
+        audience: "admin",
+        type: "system",
+        title: "Doctor logged in",
+        description: `Dr. ${doctor.name} signed in to the platform.`,
+        link: "/admin/notifications",
+      },
+    });
+  }
+
   return {
     user: { id: userId, email, name, role, avatar },
     accessToken,

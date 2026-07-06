@@ -12,8 +12,8 @@ export default function AboutPage() {
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl">Secure care workflows, built for real-world monitoring</h1>
           <p className="max-w-2xl text-muted">
-            HealthGuard is a role-based patient monitoring platform designed to keep sensitive information protected while
-            enabling fast, auditable access for patients and clinicians.
+            HealthGuard is a role-based care platform that keeps patient information secure while giving patients,
+            clinicians, and administrators the tools they need to work together with confidence.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function AboutPage() {
               <div>
                 <h2 className="text-lg font-semibold">AI-assisted insights</h2>
                 <p className="mt-2 text-sm text-muted">
-                  Summarize vitals and support clinical decision-making with a role-aware AI assistant.
+                  Summarize vitals and support clinical decisions with an assistant designed for each care role.
                 </p>
               </div>
             </div>
@@ -77,7 +77,7 @@ export default function AboutPage() {
 
         <div className="mt-10 rounded-3xl border border-border bg-muted-bg/50 p-7">
           <h3 className="text-lg font-semibold">Want to try it?</h3>
-          <p className="mt-2 text-sm text-muted">Create an account and explore the dashboards for each role.</p>
+          <p className="mt-2 text-sm text-muted">Create an account and explore the dashboards for patients, doctors, and hospital administrators.</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               href="/auth/register"

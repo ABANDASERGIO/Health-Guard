@@ -10,6 +10,10 @@ datasource db {
 model Hospital {
   id             String          @id @default(cuid())
   name           String          @unique
+  email          String?
+  phone          String?
+  address        String?
+  description    String?
   administrators Administrator[]
   doctors        Doctor[]
 }
@@ -44,6 +48,9 @@ model Doctor {
   passwordHash   String
   name           String
   avatar         String?
+  specialty      String?
+  phone          String?
+  status         String          @default("active")
   hospitalId     String
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -58,6 +65,7 @@ model Administrator {
   passwordHash String
   name         String
   avatar       String?
+  phone        String?
   hospitalId   String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -214,14 +222,14 @@ model Diagnosis {
 model Prescription {
   id          String   @id @default(cuid())
   patientId   String
-  title       String   @default("")
-  description String   @default("")
   drug        String
   dose        String
   sig         String
   refills     Int
   expires     DateTime
   createdAt   DateTime @default(now())
+  description String   @default("")
+  title       String   @default("")
   patient     Patient  @relation(fields: [patientId], references: [id])
 }
 

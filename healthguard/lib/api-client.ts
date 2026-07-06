@@ -254,6 +254,8 @@ export const doctorApi = {
       email: string;
       name: string;
       avatar?: string | null;
+      phone?: string | null;
+      specialty?: string | null;
       hospital?: { name: string } | null;
     }>("/api/doctor/profile", { method: "GET" }),
 
@@ -365,6 +367,53 @@ export const adminApi = {
 
   deleteHospital: async (id: string) => request(`/api/admin/hospitals/${id}`, { method: "DELETE" }),
 
+  getDoctors: async (search?: string, status?: string) => {
+    const query = new URLSearchParams();
+    if (search) query.set("search", search);
+    if (status) query.set("status", status);
+    return request(`/api/admin/doctors?${query.toString()}`, { method: "GET" });
+  },
+
+  getPatients: async () => request<{
+    id: string;
+    name: string;
+    assignedDoctor: string;
+    medicalDocuments: number;
+    appointments: number;
+    accessStatus: "Approved" | "Pending";
+  }[]>("/api/admin/patients", { method: "GET" }),
+
+  createDoctor: async (doctor: {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    specialty?: string;
+    phone?: string;
+    status?: "active" | "inactive";
+  }) =>
+    request("/api/admin/doctors", {
+      method: "POST",
+      body: JSON.stringify(doctor),
+    }),
+
+  updateDoctor: async (id: string, doctor: {
+    name?: string;
+    email?: string;
+    specialty?: string;
+    phone?: string;
+    status?: "active" | "inactive";
+  }) =>
+    request(`/api/admin/doctors/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(doctor),
+    }),
+
+  deleteDoctor: async (id: string) =>
+    request(`/api/admin/doctors/${id}`, {
+      method: "DELETE",
+    }),
+
   getPersonnel: async (hospitalId: string, page = 1, limit = 20) =>
     request(`/api/admin/personnel?hospitalId=${hospitalId}&page=${page}&limit=${limit}`, { method: "GET" }),
 
@@ -385,6 +434,35 @@ export const adminApi = {
 
   getLoginHistory: async (page = 1, limit = 50) =>
     request(`/api/admin/logs/login?page=${page}&limit=${limit}`, { method: "GET" }),
+
+  getHospitalProfile: async () =>
+    request("/api/admin/hospital", { method: "GET" }),
+
+  updateHospitalProfile: async (data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    description?: string;
+  }) =>
+    request("/api/admin/hospital", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  getAdminProfile: async () =>
+    request("/api/admin/profile", { method: "GET" }),
+
+  updateAdminProfile: async (data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    avatar?: string;
+  }) =>
+    request("/api/admin/profile", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 };
 
 /**

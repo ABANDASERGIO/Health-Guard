@@ -86,13 +86,10 @@ export default function PatientProfilePage() {
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="flex size-20 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-3xl font-bold text-primary">
+                  <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-3xl font-bold text-primary">
                     {profilePreviewUrl || profile.avatar ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={profilePreviewUrl || profile.avatar || ""} alt="Profile" className="size-full object-cover" />
-                    ) : (
-                      <span className="leading-none">{initials}</span>
-                    )}
+                      <img src={profilePreviewUrl || profile.avatar || ""} alt="Profile" width={80} height={80} className="h-full w-full object-cover" />
                   </div>
 
                   {isEditing ? (

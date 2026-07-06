@@ -65,8 +65,8 @@ export default function HomePage() {
               Enterprise monitoring for modern hospitals.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted">
-              A responsive web platform for patients and clinicians to coordinate care, monitor vitals, approve secure
-              access, and audit every touchpoint — with a premium dashboard experience suitable for production demos.
+              A responsive platform for patients and clinicians to coordinate care, review vitals, approve secure access,
+              and keep every interaction clear and easy to follow.
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
@@ -119,8 +119,7 @@ export default function HomePage() {
                 <div>
                   <h2 className="text-lg font-semibold">Trusted care workflows</h2>
                   <p className="mt-2 text-sm text-muted">
-                    Doctors request access, patients approve securely, and every action is surfaced in activity logs with
-                      privacy-first presentation.
+                    Doctors request access, patients approve it directly, and everyone can trust that the process is tracked clearly.
                   </p>
                 </div>
               </div>
