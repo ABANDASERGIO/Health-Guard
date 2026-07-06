@@ -13,6 +13,8 @@ import {
   getActivityLogsController,
   getAppointmentsController,
   createAppointmentController,
+  patientAiChatController,
+  patientAiSummarizeController,
 } from "../controllers/patient.controller";
 
 export const patientRouter = Router();
@@ -38,3 +40,5 @@ patientRouter.get("/activity", requireRole("PATIENT"), getActivityLogsController
 patientRouter.get("/appointments", requireRole("PATIENT"), getAppointmentsController);
 
 patientRouter.post("/appointments", requireRole("PATIENT"), createAppointmentController);
+patientRouter.post("/ai/chat", requireRole("PATIENT"), patientAiChatController);
+patientRouter.post("/ai/summarize", requireRole("PATIENT"), patientAiSummarizeController);

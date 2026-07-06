@@ -9,6 +9,8 @@ import {
   startMonitoringController,
   createAlertController,
   updateProfileController,
+  doctorAiChatController,
+  doctorAiSummarizeController,
 } from "../controllers/doctor.controller";
 
 export const doctorRouter = Router();
@@ -26,3 +28,5 @@ doctorRouter.post("/monitoring/start", requireRole("DOCTOR"), startMonitoringCon
 doctorRouter.post("/alerts", requireRole("DOCTOR"), createAlertController);
 
 doctorRouter.put("/profile", requireRole("DOCTOR"), updateProfileController);
+doctorRouter.post("/ai/chat", requireRole("DOCTOR"), doctorAiChatController);
+doctorRouter.post("/ai/summarize", requireRole("DOCTOR"), doctorAiSummarizeController);

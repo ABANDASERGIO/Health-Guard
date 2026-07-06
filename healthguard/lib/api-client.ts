@@ -241,6 +241,23 @@ export const patientApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  aiChat: async (
+    messages: { role: "system" | "user" | "assistant"; content: string }[],
+    options?: { temperature?: number; maxOutputTokens?: number }
+  ) =>
+    request<{ text: string }>("/api/patient/ai/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages, ...options }),
+    }),
+
+  aiSummarize: async (
+    text: string,
+    options?: { temperature?: number; maxOutputTokens?: number }
+  ) =>
+    request<{ summary: string }>("/api/patient/ai/summarize", {
+      method: "POST",
+      body: JSON.stringify({ text, ...options }),
+    }),
 };
 
 
@@ -341,6 +358,24 @@ export const doctorApi = {
   deletePrescription: async (patientId: string, prescriptionId: string) =>
     request(`/api/doctor/monitoring/prescriptions/${patientId}/${prescriptionId}`, {
       method: "DELETE",
+    }),
+
+  aiChat: async (
+    messages: { role: "system" | "user" | "assistant"; content: string }[],
+    options?: { temperature?: number; maxOutputTokens?: number }
+  ) =>
+    request<{ text: string }>("/api/doctor/ai/chat", {
+      method: "POST",
+      body: JSON.stringify({ messages, ...options }),
+    }),
+
+  aiSummarize: async (
+    text: string,
+    options?: { temperature?: number; maxOutputTokens?: number }
+  ) =>
+    request<{ summary: string }>("/api/doctor/ai/summarize", {
+      method: "POST",
+      body: JSON.stringify({ text, ...options }),
     }),
 
   getNewPatientDocuments: async (patientId: string) =>
