@@ -45,3 +45,5 @@ adminRouter.get("/logs/login", requireRole("ADMIN"), getLoginHistoryController);
 
 adminRouter.get("/profile", requireRole("ADMIN"), getAdminProfileController);
 adminRouter.put("/profile", requireRole("ADMIN"), updateAdminProfileController);
+
+// Admin AI endpoints removed — admin access to AI disabled per security policy

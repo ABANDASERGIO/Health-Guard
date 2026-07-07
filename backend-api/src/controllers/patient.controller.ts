@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
 import { prisma } from "../prisma";
-
+import { aiService, AiMessage } from "../services/ai.service";
 
 const VitalsSchema = z.object({
   temperature: z.string().optional().transform((v) => (v ? parseFloat(v) : undefined)),
@@ -23,6 +23,11 @@ const UpdateProfileSchema = z.object({
   phone: z.string().optional(),
   address: z.string().optional(),
   emergencyContact: z.string().optional(),
+});
+
+const AiMessageSchema = z.object({
+  role: z.enum(["system", "user", "assistant"]),
+  content: z.string().min(1),
 });
 
 export async function getProfileController(req: AuthenticatedRequest, res: Response) {
@@ -324,5 +329,45 @@ export async function createAppointmentController(req: AuthenticatedRequest, res
     message: "Appointment created",
     data: appointment,
   });
+}
+
+export async function patientAiChatController(req: AuthenticatedRequest, res: Response) {
+  try {
+    const parsed = z.object({
+      messages: z.array(AiMessageSchema).min(1),
+      temperature: z.number().optional(),
+      maxOutputTokens: z.number().optional(),
+    }).parse(req.body);
+
+    const response = await aiService.chat(parsed.messages, {
+      temperature: parsed.temperature,
+      maxOutputTokens: parsed.maxOutputTokens,
+    });
+
+    return res.status(200).json({ success: true, statusCode: 200, message: "AI chat response generated", data: { text: response } });
+  } catch (error: any) {
+    console.error("Patient AI chat error:", error?.message ?? error);
+    return res.status(500).json({ success: false, statusCode: 500, message: error?.message ?? "Failed to generate AI chat response", error: error?.message ?? "Failed to generate AI chat response" });
+  }
+}
+
+export async function patientAiSummarizeController(req: AuthenticatedRequest, res: Response) {
+  try {
+    const parsed = z.object({
+      text: z.string().min(1),
+      temperature: z.number().optional(),
+      maxOutputTokens: z.number().optional(),
+    }).parse(req.body);
+
+    const response = await aiService.summarize(parsed.text, {
+      temperature: parsed.temperature,
+      maxOutputTokens: parsed.maxOutputTokens,
+    });
+
+    return res.status(200).json({ success: true, statusCode: 200, message: "AI summary generated", data: { summary: response } });
+  } catch (error: any) {
+    console.error("Patient AI summarize error:", error?.message ?? error);
+    return res.status(500).json({ success: false, statusCode: 500, message: error?.message ?? "Failed to summarize text", error: error?.message ?? "Failed to summarize text" });
+  }
 }
 
