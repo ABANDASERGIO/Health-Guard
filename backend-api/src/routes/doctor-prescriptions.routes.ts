@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { authenticateToken, requireRole } from "../middleware/auth.middleware";
+import { authenticateToken, requireRole } from "../middleware/auth.middleware.js";
 import {
   createPrescriptionController,
   deletePrescriptionController,
   getDoctorActivePrescriptionsController,
   updatePrescriptionController,
-} from "../controllers/doctor-prescriptions.controller";
+} from "../controllers/doctor-prescriptions.controller.js";
 
 export const doctorPrescriptionsRouter = Router();
 

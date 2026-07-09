@@ -2,9 +2,9 @@ import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
-import { sendPasswordResetEmail } from "./email.service";
+import { sendPasswordResetEmail } from "./email.service.js";
 
-import { prisma } from "../prisma";
+import { prisma } from "../prisma.js";
 
 
 const RegisterSchema = z.object({

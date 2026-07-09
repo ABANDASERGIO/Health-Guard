@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs";
 import { PrismaClient } from "@prisma/client";
 
-import type { AuthenticatedRequest } from "../middleware/auth.middleware";
+import type { AuthenticatedRequest } from "../middleware/auth.middleware.js";
 
 const prisma = new PrismaClient();
 

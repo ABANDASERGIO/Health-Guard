@@ -1,8 +1,9 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import { AuthenticatedRequest } from "../middleware/auth.middleware";
-import { prisma } from "../prisma";
-import { aiService, AiMessage } from "../services/ai.service";
+import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
+import { prisma } from "../prisma.js";
+import { aiService } from "../services/ai.service.js";
+
 
 const RequestAccessSchema = z.object({
   patientId: z.string().min(1),

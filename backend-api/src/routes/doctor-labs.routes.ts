@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { authenticateToken, requireRole } from "../middleware/auth.middleware";
-import { getDoctorPendingLabResultsController } from "../controllers/doctor-labs.controller";
+import { authenticateToken, requireRole } from "../middleware/auth.middleware.js";
+import { getDoctorPendingLabResultsController } from "../controllers/doctor-labs.controller.js";
 
 export const doctorLabsRouter = Router();
+
 
 doctorLabsRouter.use(authenticateToken);
 

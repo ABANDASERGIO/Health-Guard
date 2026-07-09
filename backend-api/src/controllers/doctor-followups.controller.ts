@@ -1,7 +1,7 @@
 import type { Response } from "express";
 import { z } from "zod";
-import type { AuthenticatedRequest } from "../middleware/auth.middleware";
-import { prisma } from "../prisma";
+import type { AuthenticatedRequest } from "../middleware/auth.middleware.js";
+import { prisma } from "../prisma.js";
 
 
 const GetFollowUpsParamsSchema = z.object({

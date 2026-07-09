@@ -9,8 +9,9 @@ import {
   requestPasswordResetController,
   verifyPasswordResetOtpController,
   resetPasswordController,
-} from "../controllers/auth.controller";
-import { changePasswordController } from "../controllers/change-password.controller";
+} from "../controllers/auth.controller.js";
+import { changePasswordController } from "../controllers/change-password.controller.js";
+
 
 export const authRouter = Router();
 

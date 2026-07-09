@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import type { Role } from "@prisma/client";
-import { changePasswordService } from "../services/change-password.service";
+import { changePasswordService } from "../services/change-password.service.js";
 
 function getBearerToken(req: Request) {
   const authHeader = req.headers.authorization;

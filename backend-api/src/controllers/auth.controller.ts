@@ -3,7 +3,16 @@ import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { PrismaClient, Role } from "@prisma/client";
 
-import { registerService, loginService, verifyOtpService, requestOtpService, requestPasswordResetService, verifyPasswordResetOtpService, resetPasswordService } from "../services/auth.service";
+import {
+  registerService,
+  loginService,
+  verifyOtpService,
+  requestOtpService,
+  requestPasswordResetService,
+  verifyPasswordResetOtpService,
+  resetPasswordService,
+} from "../services/auth.service.js";
+
 
 const prisma = new PrismaClient();
 const isDev = process.env.NODE_ENV !== "production";

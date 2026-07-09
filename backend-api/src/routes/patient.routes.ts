@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { authenticateToken, requireRole } from "../middleware/auth.middleware";
+import { authenticateToken, requireRole } from "../middleware/auth.middleware.js";
 import {
+
   getProfileController,
   updateProfileController,
   getVitalsController,
@@ -15,7 +16,7 @@ import {
   createAppointmentController,
   patientAiChatController,
   patientAiSummarizeController,
-} from "../controllers/patient.controller";
+} from "../controllers/patient.controller.js";
 
 export const patientRouter = Router();
 

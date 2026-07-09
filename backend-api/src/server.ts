@@ -6,19 +6,19 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import expressStatic from "serve-static";
 
-import { authRouter } from "./routes/auth.routes";
-import { patientRouter } from "./routes/patient.routes";
-import { doctorRouter } from "./routes/doctor.routes";
-import { adminRouter } from "./routes/admin.routes";
-import { notificationRouter } from "./routes/notification.routes";
-import { doctorAppointmentsRouter } from "./routes/doctor-appointments.routes";
-import { doctorLabsRouter } from "./routes/doctor-labs.routes";
-import { doctorFollowUpsRouter } from "./routes/doctor-followups.routes";
-import { doctorPrescriptionsRouter } from "./routes/doctor-prescriptions.routes";
-import { doctorDocumentsRouter } from "./routes/doctor-documents.routes";
-import { patientPrescriptionsRouter } from "./routes/patient-prescriptions.routes";
+import { authRouter } from "./routes/auth.routes.js";
+import { patientRouter } from "./routes/patient.routes.js";
+import { doctorRouter } from "./routes/doctor.routes.js";
+import { adminRouter } from "./routes/admin.routes.js";
+import { notificationRouter } from "./routes/notification.routes.js";
+import { doctorAppointmentsRouter } from "./routes/doctor-appointments.routes.js";
+import { doctorLabsRouter } from "./routes/doctor-labs.routes.js";
+import { doctorFollowUpsRouter } from "./routes/doctor-followups.routes.js";
+import { doctorPrescriptionsRouter } from "./routes/doctor-prescriptions.routes.js";
+import { doctorDocumentsRouter } from "./routes/doctor-documents.routes.js";
+import { patientPrescriptionsRouter } from "./routes/patient-prescriptions.routes.js";
 
-import { documentRouter } from "./routes/document.routes";
+import { documentRouter } from "./routes/document.routes.js";
 
 
 

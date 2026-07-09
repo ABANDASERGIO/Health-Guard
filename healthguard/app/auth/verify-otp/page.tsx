@@ -58,8 +58,7 @@ export default function VerifyOtpPage() {
     >
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
         <div className="rounded-2xl border border-border bg-muted-bg/60 px-4 py-3 text-sm text-muted">
-          Demo code: use any six digits (for example{" "}
-          <span className="font-mono font-semibold text-foreground">482913</span>) to advance the workflow.
+          Enter the 6-digit code that was sent to your email address.
         </div>
 
         <div className="space-y-2">

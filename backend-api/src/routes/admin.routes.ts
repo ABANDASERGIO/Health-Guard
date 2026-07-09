@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticateToken, requireRole } from "../middleware/auth.middleware";
+import { authenticateToken, requireRole } from "../middleware/auth.middleware.js";
 import {
   getDashboardStatsController,
   getDoctorsController,
@@ -18,7 +18,7 @@ import {
   getLoginHistoryController,
   getAdminProfileController,
   updateAdminProfileController,
-} from "../controllers/admin.controller";
+} from "../controllers/admin.controller.js";
 
 export const adminRouter = Router();
 

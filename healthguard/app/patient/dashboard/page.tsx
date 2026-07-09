@@ -160,7 +160,7 @@ export default function PatientDashboardPage() {
               <div className="flex items-start justify-between gap-3 rounded-xl border border-border bg-muted-bg/40 p-4">
                 <div>
                   <p className="text-sm font-semibold">Appointments</p>
-                  <p className="mt-1 text-xs text-muted">Create a new appointment request (backend wiring in Step 2).</p>
+                  <p className="mt-1 text-xs text-muted">Create a new appointment request .</p>
                 </div>
 
                 <button

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticateToken, requireRole } from "../middleware/auth.middleware";
+import { authenticateToken, requireRole } from "../middleware/auth.middleware.js";
 import multer from "multer";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7,7 +7,9 @@ type AnyMulter = any;
 import path from "path";
 import fs from "fs";
 
-import { uploadPatientDocumentController, deletePatientDocumentController } from "../controllers/document.controller";
+
+import { uploadPatientDocumentController, deletePatientDocumentController } from "../controllers/document.controller.js";
+
 
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
