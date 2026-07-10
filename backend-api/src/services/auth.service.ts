@@ -87,12 +87,8 @@ async function resolveHospitalId(parsed: RegisterInput) {
     if (hospital) hospitalId = hospital.id;
   }
 
-  // Create hospital if hospitalName provided and not found
-  if (!hospitalId && parsed.hospitalName?.trim()) {
-    const created = await prisma.hospital.create({ data: { name: parsed.hospitalName.trim() } });
-    hospitalId = created.id;
-  }
-
+  // IMPORTANT: do NOT auto-create hospitals.
+  // For DOCTOR and ADMIN registration, hospitalName must already exist.
   return hospitalId;
 }
 
@@ -127,7 +123,11 @@ export async function registerService(input: RegisterInput) {
   const hospitalId = needsHospital ? await resolveHospitalId(parsed) : null;
 
   if (needsHospital && !hospitalId) {
-    throw Object.assign(new Error("hospitalId/hospitalName is required for DOCTOR and ADMIN"), { statusCode: 400 });
+    const hasHospitalName = Boolean(parsed.hospitalName?.trim());
+    const message = hasHospitalName
+      ? "Hospital does not exist"
+      : "hospital name is required";
+    throw Object.assign(new Error(message), { statusCode: 400 });
   }
 
   const existing = await emailExistsAnywhere(parsed.email);

@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { doctorAiInsights, doctorAiStarterMessage, doctorSuggestedAiPrompts } from "@/mock-data/doctor-ai";
+import AiMarkdown from "@/components/ai/ai-markdown";
+
 
 type Msg = { id: string; role: "user" | "assistant"; content: string; ts: number };
 type AiPayload = { role: "system" | "user" | "assistant"; content: string };
@@ -140,7 +142,7 @@ export default function DoctorAiAssistantPage() {
                           <ClipboardList className="size-3.5 text-primary" /> Assistant
                         </motion.div>
                       ) : null}
-                      {m.content}
+                      <AiMarkdown content={m.content} />
                     </div>
                   </motion.div>
                 ))}

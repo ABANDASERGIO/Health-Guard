@@ -10,10 +10,10 @@ datasource db {
 model Hospital {
   id             String          @id @default(cuid())
   name           String          @unique
-  email          String?
-  phone          String?
   address        String?
   description    String?
+  email          String?
+  phone          String?
   administrators Administrator[]
   doctors        Doctor[]
 }
@@ -48,12 +48,12 @@ model Doctor {
   passwordHash   String
   name           String
   avatar         String?
-  specialty      String?
-  phone          String?
-  status         String          @default("active")
   hospitalId     String
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  phone          String?
+  specialty      String?
+  status         String          @default("active")
   accessRequests AccessRequest[]
   alerts         Alert[]
   hospital       Hospital        @relation(fields: [hospitalId], references: [id])
@@ -65,10 +65,10 @@ model Administrator {
   passwordHash String
   name         String
   avatar       String?
-  phone        String?
   hospitalId   String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  phone        String?
   hospital     Hospital @relation(fields: [hospitalId], references: [id])
 }
 

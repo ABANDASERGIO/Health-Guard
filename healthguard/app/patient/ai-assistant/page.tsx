@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
+import AiMarkdown from "@/components/ai/ai-markdown";
 
 const suggestedAiPrompts = [
   "Explain my latest blood pressure trend in plain language.",
@@ -155,7 +156,7 @@ export default function PatientAiAssistantPage() {
                           <Stethoscope className="size-3.5 text-primary" /> Assistant
                         </div>
                       ) : null}
-                      {m.content}
+                      <AiMarkdown content={m.content} />
                     </div>
                   </motion.div>
                 ))}
